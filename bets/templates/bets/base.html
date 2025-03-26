@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}My Django Site{% endblock %}</title>
+    <title>{% block title %}Chommies{% endblock %}</title>
     
     {# Bulma CSS #}
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css">
@@ -14,13 +14,13 @@
     
     {% block extra_css %}{% endblock %}
 </head>
-<body>
+<body style="background-color: #ffbb34;">
     {# Navbar #}
-    <nav class="navbar" role="navigation" aria-label="main navigation">
+    <nav class="navbar" role="navigation" aria-label="main navigation" style="background: transparent;">
         <div class="navbar-brand">
             {# Logo #}
             <a class="navbar-item" href="{% url 'home' %}">
-                <img src="{% static 'images/logo.png' %}" alt="Logo" width="112" height="28">
+                <img src="{% static 'images/logo.png' %}" alt="Logo" width="299" height="242" style="object-fit: contain; max-height: 6rem;">
             </a>
 
             {# Hamburger menu for mobile #}
