@@ -1,0 +1,127 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}My Django Site{% endblock %}</title>
+    
+    {# Bulma CSS #}
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css">
+    
+    {# Optional: Font Awesome for icons #}
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    {# Navbar #}
+    <nav class="navbar" role="navigation" aria-label="main navigation">
+        <div class="navbar-brand">
+            {# Logo #}
+            <a class="navbar-item" href="{% url 'home' %}">
+                <img src="{% static 'images/logo.png' %}" alt="Logo" width="112" height="28">
+            </a>
+
+            {# Hamburger menu for mobile #}
+            <a role="button" class="navbar-burger" aria-label="menu" aria-expanded="false" data-target="mainNavbar">
+                <span aria-hidden="true"></span>
+                <span aria-hidden="true"></span>
+                <span aria-hidden="true"></span>
+            </a>
+        </div>
+
+        {# Main Menu Items #}
+        <div id="mainNavbar" class="navbar-menu">
+            {# Left-side menu items #}
+            <div class="navbar-start">
+                <a href="{% url 'home' %}" class="navbar-item">
+                    <span class="icon-text">
+                        <span class="icon"><i class="fas fa-home"></i></span>
+                        <span>Home</span>
+                    </span>
+                </a>
+
+                <a href="{% url 'about' %}" class="navbar-item">
+                    <span class="icon-text">
+                        <span class="icon"><i class="fas fa-info-circle"></i></span>
+                        <span>About</span>
+                    </span>
+                </a>
+
+                {# Dropdown example #}
+                <div class="navbar-item has-dropdown is-hoverable">
+                    <a class="navbar-link">
+                        <span class="icon-text">
+                            <span class="icon"><i class="fas fa-cogs"></i></span>
+                            <span>Services</span>
+                        </span>
+                    </a>
+
+                    <div class="navbar-dropdown">
+                        <a href="{% url 'service1' %}" class="navbar-item">Service 1</a>
+                        <a href="{% url 'service2' %}" class="navbar-item">Service 2</a>
+                        <hr class="navbar-divider">
+                        <a href="{% url 'all_services' %}" class="navbar-item">All Services</a>
+                    </div>
+                </div>
+            </div>
+
+            {# Right-side menu items #}
+            <div class="navbar-end">
+                {% if user.is_authenticated %}
+                    <div class="navbar-item">
+                        <div class="buttons">
+                            <a href="{% url 'profile' %}" class="button is-light">
+                                <span class="icon"><i class="fas fa-user"></i></span>
+                                <span>Profile</span>
+                            </a>
+                            <a href="{% url 'logout' %}" class="button is-danger">
+                                <span class="icon"><i class="fas fa-sign-out-alt"></i></span>
+                                <span>Logout</span>
+                            </a>
+                        </div>
+                    </div>
+                {% else %}
+                    <div class="navbar-item">
+                        <div class="buttons">
+                            <a href="{% url 'signup' %}" class="button is-primary">
+                                <strong>Sign up</strong>
+                            </a>
+                            <a href="{% url 'login' %}" class="button is-light">
+                                Log in
+                            </a>
+                        </div>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </nav>
+
+    {# Main content block #}
+    {% block content %}{% endblock %}
+
+    {# JavaScript for mobile menu toggle #}
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Get all "navbar-burger" elements
+            const $navbarBurgers = Array.prototype.slice.call(document.querySelectorAll('.navbar-burger'), 0);
+
+            // Add a click event on each of them
+            $navbarBurgers.forEach( el => {
+                el.addEventListener('click', () => {
+                    // Get the target from the "data-target" attribute
+                    const target = el.dataset.target;
+                    const $target = document.getElementById(target);
+
+                    // Toggle the "is-active" class on both the "navbar-burger" and the "navbar-menu"
+                    el.classList.toggle('is-active');
+                    $target.classList.toggle('is-active');
+                });
+            });
+        });
+    </script>
+
+    {% block extra_js %}{% endblock %}
+</body>
+</html>
