@@ -1,5 +1,6 @@
 from django.shortcuts import render, redirect
 from django.contrib.auth import logout
+from django.conf.urls.static import static
 
 from .forms import ImageUploadForm
 
