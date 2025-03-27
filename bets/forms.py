@@ -9,4 +9,7 @@ class ImageUploadForm(forms.ModelForm):
         widgets = {
             "name": forms.TextInput(attrs={"class": "form-control"}),
             "image": forms.FileInput(attrs={"class": "form-control"}),
+            "description": forms.Textarea(attrs={"class": "form-control"}),
+            "deadline": forms.DateTimeInput(attrs={"class": "form-control"}),
+            "is_public": forms.CheckboxInput(attrs={"class": "form-check-input"}),
         }

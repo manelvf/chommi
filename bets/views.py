@@ -1,5 +1,6 @@
 from django.shortcuts import render, redirect
 from django.contrib.auth import logout
+from django.contrib import messages
 from django.conf.urls.static import static
 
 from .forms import ImageUploadForm
@@ -10,15 +11,13 @@ def index(request):
         {
             "url": static("images/image1.jpg"),
             "alt": "First Image",
-            "title": "Amazing Landscape",
+            "title": "Amazing Landscape with Mountains and a River",
             "description": "A beautiful scene from our collection",
         },
         # Add more images...
     ]
 
-    return render(request, "gallery.html", {"gallery_images": gallery_images})
-
-    return render(request, "bets/index.html")
+    return render(request, "bets/home.html", {"gallery_images": gallery_images})
 
 
 def about(request):
@@ -30,12 +29,15 @@ def create_event(request):
         form = ImageUploadForm(request.POST, request.FILES)
         if form.is_valid():
             form.save()
-            messages.success(request, "Image uploaded successfully!")
-            return redirect("upload_image")
+            messages.success(request, "Event created successfully!")
+            return redirect("home")
+        else:
+            messages.error(request, "Error creating event. Please check the form.")
+            return render(request, "bets/create_event.html", {"form": form})
     else:
         form = ImageUploadForm()
 
-    return render(request, "upload_image.html", {"form": form})
+    return render(request, "bets/create_event.html", {"form": form})
 
 
 def service2(request):
@@ -54,3 +56,11 @@ def logout(request):
     logout(request)
 
     redirect("home")
+
+
+def signup(request):
+    return render(request, "bets/signup.html")
+
+
+def login(request):
+    return render(request, "bets/login.html")

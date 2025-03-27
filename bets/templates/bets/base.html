@@ -11,10 +11,27 @@
     
     {# Optional: Font Awesome for icons #}
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
+
+    <style>
+        /* Ensure html and body take full height */
+        html, body {
+            height: 100%;
+            margin: 0;
+            background-color: #ffbb34;
+        }
+
+        footer {
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            background-color: #ffbb34 !important;
+        }
+
+    </style>
+
     {% block extra_css %}{% endblock %}
 </head>
-<body style="background-color: #ffbb34;">
+<body>
     {# Navbar #}
     <nav class="navbar" role="navigation" aria-label="main navigation" style="background: transparent;">
         <div class="navbar-brand">
@@ -32,13 +49,21 @@
         </div>
 
         {# Main Menu Items #}
-        <div id="mainNavbar" class="navbar-menu">
+        <div id="mainNavbar" class="navbar-menu" style="background: #ffafa2;">
+            {# Close button for mobile #}
             {# Left-side menu items #}
             <div class="navbar-start">
                 <a href="{% url 'home' %}" class="navbar-item">
                     <span class="icon-text">
                         <span class="icon"><i class="fas fa-home"></i></span>
                         <span>Home</span>
+                    </span>
+                </a>
+
+                <a href="{% url 'create_event' %}" class="navbar-item">
+                    <span class="icon-text">
+                        <span class="icon"><i class="fas fa-date"></i></span>
+                        <span>Crear Evento</span>
                     </span>
                 </a>
 
@@ -59,7 +84,6 @@
                     </a>
 
                     <div class="navbar-dropdown">
-                        <a href="{% url 'service1' %}" class="navbar-item">Service 1</a>
                         <a href="{% url 'service2' %}" class="navbar-item">Service 2</a>
                         <hr class="navbar-divider">
                         <a href="{% url 'all_services' %}" class="navbar-item">All Services</a>
@@ -100,6 +124,13 @@
 
     {# Main content block #}
     {% block content %}{% endblock %}
+
+    {# Footer #}
+    <footer class="footer">
+        <div class="content has-text-centered">
+            <p>© 2025 Chommies</p>
+        </div>
+    </footer>
 
     {# JavaScript for mobile menu toggle #}
     <script>
