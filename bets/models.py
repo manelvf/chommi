@@ -14,6 +14,7 @@ class Event(models.Model):
     title = models.CharField(max_length=255)
     subtitle = models.CharField(max_length=255)
     description = models.TextField()
+    image = models.ImageField(upload_to="uploads/")
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     deadline = models.DateTimeField()

@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+
+{% block title %}Home{% endblock %}
+
+{% block content %}
+
+<section class="section">
+    <div class="container">
+        <h2 class="title is-3 has-text-centered mb-6">Our Gallery</h2>
+        
+        <div class="columns is-multiline is-mobile">
+            {% for image in gallery_images %}
+                <div class="column is-12-mobile is-4-tablet is-4-desktop">
+                    <div class="card">
+                        <div class="card-image">
+                            <figure class="image is-4by3">
+                                <img src="{{ image.url }}" loading="lazy">
+                            </figure>
+                        </div>
+                        <div class="card-content">
+                            <div class="content">
+                                <h3 class="title is-5">{{ image.title }}</h3>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+{# Optional: Add some custom CSS for hover effect #}
+<style>
+    .card {
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    .card:hover {
+        transform: scale(1.05);
+        box-shadow: 0 10px 20px rgba(0,0,0,0.12), 0 4px 8px rgba(0,0,0,0.06);
+    }
+</style>
+
+{% endblock %}
