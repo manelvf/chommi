@@ -6,6 +6,7 @@ from django.forms import inlineformset_factory
 from PIL import Image, UnidentifiedImageError
 from io import BytesIO
 from django.core.files import File
+from django.utils.translation import gettext_lazy as _
 import imghdr
 import os
 
@@ -30,12 +31,12 @@ class EventOptionForm(forms.ModelForm):
         # Get the form's position in the formset
         if 'prefix' in kwargs:
             form_number = int(kwargs['prefix'].split('-')[-1]) + 1
-            self.fields['title'].label = f'Opción {form_number}'
+            self.fields['title'].label = _('Opción %(number)d') % {'number': form_number}
 
     def clean_initial_odds(self):
         odds = self.cleaned_data.get('initial_odds')
         if odds <= 0:
-            raise ValidationError('Las cuotas deben ser mayores a 0')
+            raise ValidationError(_('Las cuotas deben ser mayores a 0'))
         return odds
 
 
@@ -81,16 +82,16 @@ class ImageUploadForm(forms.ModelForm):
 
         # Check file size
         if image.size > IMAGE_SIZE_LIMIT:
-            raise ValidationError('La imagen no puede ser mayor a 2MB.')
+            raise ValidationError(_('La imagen no puede ser mayor a 2MB.'))
 
         # Check file extension
         extension = image.name.split('.')[-1].lower()
         if extension not in ALLOWED_EXTENSIONS:
-            raise ValidationError('Solo se permiten archivos de imagen (PNG, JPG, JPEG, GIF).')
+            raise ValidationError(_('Solo se permiten archivos de imagen (PNG, JPG, JPEG, GIF).'))
 
         # Check content type
         if image.content_type not in ALLOWED_MIME_TYPES:
-            raise ValidationError('El archivo debe ser una imagen válida (PNG, JPG, JPEG, GIF).')
+            raise ValidationError(_('El archivo debe ser una imagen válida (PNG, JPG, JPEG, GIF).'))
 
         try:
             # Try to open and verify the image
@@ -121,8 +122,8 @@ class ImageUploadForm(forms.ModelForm):
             image.file = File(output, name=new_name)
             
         except UnidentifiedImageError:
-            raise ValidationError('El archivo no es una imagen válida.')
+            raise ValidationError(_('El archivo no es una imagen válida.'))
         except Exception as e:
-            raise ValidationError(f'Error al procesar la imagen: {str(e)}')
+            raise ValidationError(_('Error al procesar la imagen: %(error)s') % {'error': str(e)})
         
         return image
