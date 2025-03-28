@@ -7,32 +7,18 @@
 {% block extra_css %}
     <link rel="stylesheet" href="{% static 'css/custom.css' %}">
 
-    <style>
-
-    @media screen and (max-width: 768px) {
-        .is-mobile-stacked {
-            flex-direction: column !important;
-        }
-        
-        .is-mobile-stacked > * {
-            margin-bottom: 0.5rem;
-            margin-right: 0 !important;
-            width: 100% !important;
-        }
-    }
-    </style>
 {% endblock %}
 
-{% block title %}Home{% endblock %}
+{% block title %}Crea tu desafio{% endblock %}
 
 {% block content %}
 
-<section class="section">
+<section class="section is-large">
     <div class="container">
-        <div class="columns is-centered is-mobile-stacked">
+        <div class="columns is-centered">
             <div class="column is-half">
                 <div class="box has-background-info">
-                    <h2 class="title is-3 has-text-centered mb-5">Upload Image</h2>
+                    <h2 class="title is-3 has-text-centered mb-5">Crea un nuevo Desaf&iacute;o</h2>
                     
                     {% if messages %}
                         {% for message in messages %}
@@ -41,18 +27,63 @@
                             </div>
                         {% endfor %}
                     {% endif %}
+
+                    <!-- Field with Non-Field Errors -->
+                    {% if form.non_field_errors %}
+                    <div class="notification is-danger">
+                        {% for error in form.non_field_errors %}
+                            <p>{{ error }}</p>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
                     
                     <form method="post" enctype="multipart/form-data">
                         {% csrf_token %}
                         <div class="field">
-                            <label class="label">{{ form.name.label_tag }}</label>
+                            <label class="label">
+                                {{ form.title.label_tag }}
+                                {% if form.title.errors %}
+                                    <span class="has-text-danger">*</span>
+                                {% endif %}
+                            </label>
                             <div class="control">
-                                {{ form.name|add_class:"input" }}
+                                {{ form.title|add_class:"input" }}
                             </div>
                         </div>
-                        
+
                         <div class="field">
-                            <label class="label">{{ form.image.label_tag }}</label>
+                            <label class="label">
+                                {{ form.deadline.label_tag }}
+                                {% if form.deadline.errors %}
+                                    <span class="has-text-danger">*</span>
+                                {% endif %}
+                            </label>
+                            <div class="control">
+                                {{ form.deadline }}
+                            </div>
+                            {% if form.deadline.errors %}
+                            <p class="help is-danger">
+                                {% for error in form.deadline.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </p>
+                            {% endif %}
+                        </div>
+
+                        <div class="field">
+                            <label class="label">{{ form.description.label_tag }}</label>
+                            <div class="control">
+                                {{ form.description|add_class:"textarea" }}
+                            </div>
+                        </div>
+
+                        <div class="field">
+                            <label class="label">
+                                {{ form.image.label_tag }}
+                                {% if form.image.errors %}
+                                    <span class="has-text-danger">*</span>
+                                {% endif %}
+                            </label>
                             <div class="control">
                                 {{ form.image|add_class:"file-input" }}
                                 <span class="file">
@@ -61,6 +92,17 @@
                                     </label>
                                 </span>
                             </div>
+                            {% if form.image.errors %}
+                            <p class="help is-danger">
+                                {% for error in form.image.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </p>
+                            {% endif %}
+                        </div>
+
+                        <div class="field">
+                            <label class="checkbox">{{ form.is_public|add_class:"checkbox" }} {{ form.is_public.label_tag }}</label>
                         </div>
                         
                         <div class="field">

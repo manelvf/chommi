@@ -26,16 +26,16 @@ def about(request):
 
 def create_event(request):
     if request.method == "POST":
-        form = ImageUploadForm(request.POST, request.FILES)
+        form = ImageUploadForm(request.POST, request.FILES, label_suffix="")
         if form.is_valid():
             form.save()
             messages.success(request, "Event created successfully!")
             return redirect("home")
         else:
-            messages.error(request, "Error creating event. Please check the form.")
+            messages.error(request, f"Error creating event. Please check the form.")
             return render(request, "bets/create_event.html", {"form": form})
     else:
-        form = ImageUploadForm()
+        form = ImageUploadForm(label_suffix="")
 
     return render(request, "bets/create_event.html", {"form": form})
 
