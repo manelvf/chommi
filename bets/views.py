@@ -2,8 +2,11 @@ from django.shortcuts import render, redirect
 from django.contrib.auth import logout
 from django.contrib import messages
 from django.conf.urls.static import static
+from django.conf import settings
+from django.forms.models import inlineformset_factory
 
-from .forms import ImageUploadForm, EventOptionFormSet
+from .forms import ImageUploadForm, EventOptionForm, CustomEventOptionFormSet
+from .models import Event, EventOption
 
 
 def index(request):
@@ -28,7 +31,7 @@ def create_event(request):
     if request.method == "POST":
         form = ImageUploadForm(request.POST, request.FILES, label_suffix="")
         formset = EventOptionFormSet(request.POST, instance=form.instance if form.is_valid() else None)
-        
+
         if form.is_valid() and formset.is_valid():
             event = form.save()
             formset.instance = event
@@ -37,12 +40,20 @@ def create_event(request):
             return redirect("home")
         else:
             messages.error(request, "Error creating event. Please check the form.")
-            return render(request, "bets/create_event.html", {"form": form, "formset": formset})
+            return render(request, "bets/create_event.html", {
+                "form": form, 
+                "formset": formset,
+                "debug": settings.DEBUG
+            })
     else:
         form = ImageUploadForm(label_suffix="")
         formset = EventOptionFormSet(instance=form.instance)
 
-    return render(request, "bets/create_event.html", {"form": form, "formset": formset})
+    return render(request, "bets/create_event.html", {
+        "form": form, 
+        "formset": formset,
+        "debug": settings.DEBUG
+    })
 
 
 def service2(request):
@@ -69,3 +80,17 @@ def signup(request):
 
 def login(request):
     return render(request, "bets/login.html")
+
+
+EventOptionFormSet = inlineformset_factory(
+    Event,
+    EventOption,
+    form=EventOptionForm,
+    formset=CustomEventOptionFormSet,
+    extra=1,
+    can_delete=True,
+    min_num=2,
+    max_num=7,
+    validate_min=True,
+    validate_max=True
+)

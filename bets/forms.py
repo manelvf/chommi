@@ -7,11 +7,14 @@ from PIL import Image, UnidentifiedImageError
 from io import BytesIO
 from django.core.files import File
 from django.utils.translation import gettext_lazy as _
+from django.conf import settings
+from django.utils import timezone
 import imghdr
 import os
+import json
 
 
-IMAGE_SIZE_LIMIT = 2 * 1024 * 1024
+IMAGE_SIZE_LIMIT = 4 * 1024 * 1024
 IMAGE_DIMENSIONS = (300, 300)
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
 ALLOWED_MIME_TYPES = {'image/jpeg', 'image/png', 'image/gif'}
@@ -32,6 +35,9 @@ class EventOptionForm(forms.ModelForm):
         if 'prefix' in kwargs:
             form_number = int(kwargs['prefix'].split('-')[-1]) + 1
             self.fields['title'].label = _('Opción %(number)d') % {'number': form_number}
+            # Make fields required
+            self.fields['title'].required = True
+            self.fields['initial_odds'].required = True
 
     def clean_initial_odds(self):
         odds = self.cleaned_data.get('initial_odds')
@@ -40,10 +46,36 @@ class EventOptionForm(forms.ModelForm):
         return odds
 
 
+class CustomEventOptionFormSet(forms.BaseInlineFormSet):
+    def clean(self):
+        super().clean()
+        if not self.is_valid():
+            return
+
+        # Count non-deleted forms with data
+        non_deleted_forms = [form for form in self.forms if not form.cleaned_data.get('DELETE', False)]
+        valid_forms = [form for form in non_deleted_forms if form.cleaned_data.get('title') and form.cleaned_data.get('initial_odds')]
+
+        if len(valid_forms) < 2:
+            raise ValidationError(_('Debes proporcionar al menos 2 opciones válidas para el evento.'))
+
+    def save(self, commit=True):
+        instances = super().save(commit=False)
+        for instance in instances:
+            if not instance.pk:  # Only for new instances
+                instance.current_odds = instance.initial_odds
+        if commit:
+            self.save_m2m()
+            for instance in instances:
+                instance.save()
+        return instances
+
+
 EventOptionFormSet = inlineformset_factory(
     Event,
     EventOption,
     form=EventOptionForm,
+    formset=CustomEventOptionFormSet,
     extra=1,
     can_delete=True,
     min_num=2,
@@ -54,6 +86,8 @@ EventOptionFormSet = inlineformset_factory(
 
 
 class ImageUploadForm(forms.ModelForm):
+    debug_info = forms.CharField(widget=forms.HiddenInput(), required=False)
+
     class Meta:
         model = Event
         fields = ["title", "description", "image", "deadline", "is_public"]
@@ -74,6 +108,43 @@ class ImageUploadForm(forms.ModelForm):
         tomorrow = datetime.now() + timedelta(days=1)
         tomorrow_noon = tomorrow.replace(hour=12, minute=0, second=0, microsecond=0)
         self.fields['deadline'].initial = tomorrow_noon
+
+        # Add debug info if DEBUG is enabled
+        if settings.DEBUG:
+            self.fields['debug_info'].widget = forms.Textarea(attrs={
+                'class': 'debug-info',
+                'readonly': True,
+                'style': 'display: none;'
+            })
+
+    def clean_deadline(self):
+        deadline = self.cleaned_data.get('deadline')
+        now = timezone.now()
+        
+        # Check if deadline is in the past
+        if deadline <= now:
+            raise ValidationError(_('La fecha límite debe ser en el futuro.'))
+        
+        # Check if deadline is too far in the future (e.g., 1 year)
+        max_future = now + timedelta(days=365)
+        if deadline > max_future:
+            raise ValidationError(_('La fecha límite no puede ser más de un año en el futuro.'))
+        
+        return deadline
+
+    def clean(self):
+        cleaned_data = super().clean()
+        if settings.DEBUG:
+            # Collect debug information
+            cleaned_data["deadline"] = str(cleaned_data["deadline"])
+            debug_data = {
+                'form_errors': self.errors,
+                'non_field_errors': self.non_field_errors(),
+                'cleaned_data': cleaned_data,
+                'files': self.files,
+            }
+            cleaned_data['debug_info'] = json.dumps(debug_data, indent=2)
+        return cleaned_data
 
     def clean_image(self):
         image = self.cleaned_data.get('image')

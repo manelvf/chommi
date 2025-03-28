@@ -130,14 +130,6 @@
                                                         </div>
                                                     </div>
                                                 </div>
-                                                <div class="column is-1">
-                                                    <div class="field">
-                                                        <label class="label">&nbsp;</label>
-                                                        <div class="control">
-                                                            {{ option_form.DELETE }}
-                                                        </div>
-                                                    </div>
-                                                </div>
                                             </div>
                                             {{ option_form.id }}
                                         </div>
@@ -161,6 +153,17 @@
                                 <button type="submit" class="button is-primary is-fullwidth">Crear Desafío</button>
                             </div>
                         </div>
+
+                        {% if debug %}
+                            <div class="field mt-4">
+                                <div class="control">
+                                    <div class="box has-background-danger-light">
+                                        <h4 class="title is-5 has-text-danger">Debug Information</h4>
+                                        <pre class="has-text-danger">{{ form.debug_info.value }}</pre>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endif %}
                     </form>
                 </div>
             </div>
