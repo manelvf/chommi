@@ -66,6 +66,6 @@ class ImageUploadForm(forms.ModelForm):
     def clean_image(self):
         image = self.cleaned_data.get('image')
         if image:
-            if image.size > 300 * 1024:  # 300KB in bytes
-                raise ValidationError('La imagen no puede ser mayor a 300KB.')
+            if image.size > 2 * 1024 * 1024:  # 2MB in bytes
+                raise ValidationError('La imagen no puede ser mayor a 2MB.')
         return image
