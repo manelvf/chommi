@@ -90,7 +90,7 @@ class ImageUploadForm(forms.ModelForm):
 
     class Meta:
         model = Event
-        fields = ["title", "description", "image", "deadline", "is_public"]
+        fields = ["title", "description", "image", "deadline", "is_public", "creator"]
         widgets = {
             "name": forms.TextInput(attrs={"class": "form-control"}),
             "image": forms.FileInput(attrs={"class": "form-control"}),
@@ -100,9 +100,11 @@ class ImageUploadForm(forms.ModelForm):
                 "type": "datetime-local"
             }),
             "is_public": forms.CheckboxInput(attrs={"class": "form-check-input"}),
+            "creator": forms.HiddenInput()
         }
 
     def __init__(self, *args, **kwargs):
+        self.creator = kwargs.pop('creator', None)
         super().__init__(*args, **kwargs)
         
         # Set default deadline only for new events
@@ -193,3 +195,11 @@ class ImageUploadForm(forms.ModelForm):
             raise ValidationError(_('Error al procesar la imagen: %(error)s') % {'error': str(e)})
         
         return image
+
+    def save(self, commit=True):
+        instance = super().save(commit=False)
+        if not instance.pk:  # Only set user for new instances
+            instance.creator = self.creator
+        if commit:
+            instance.save()
+        return instance

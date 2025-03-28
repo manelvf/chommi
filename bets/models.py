@@ -21,6 +21,7 @@ class Event(models.Model):
     is_active = models.BooleanField(default=True)
     is_public = models.BooleanField(default=True)
     is_finished = models.BooleanField(default=False)
+    creator = models.ForeignKey(User, on_delete=models.CASCADE, related_name='events')
 
     def __str__(self):
         return self.title

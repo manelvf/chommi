@@ -28,8 +28,12 @@ def about(request):
 
 
 def create_event(request):
+    if not request.user.is_authenticated:
+        messages.error(request, "You must be logged in to create an event.")
+        return redirect('login')
+
     if request.method == "POST":
-        form = ImageUploadForm(request.POST, request.FILES, label_suffix="")
+        form = ImageUploadForm(request.POST, request.FILES, label_suffix="", creator=request.user)
         formset = EventOptionFormSet(request.POST, instance=form.instance if form.is_valid() else None)
 
         if form.is_valid() and formset.is_valid():
@@ -46,7 +50,7 @@ def create_event(request):
                 "debug": settings.DEBUG
             })
     else:
-        form = ImageUploadForm(label_suffix="")
+        form = ImageUploadForm(label_suffix="", creator=request.user)
         formset = EventOptionFormSet(instance=form.instance)
 
     return render(request, "bets/create_event.html", {
