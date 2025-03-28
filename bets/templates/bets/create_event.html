@@ -18,7 +18,13 @@
         <div class="columns is-centered">
             <div class="column is-half">
                 <div class="box has-background-primary-light">
-                    <h2 class="title is-3 has-text-centered mb-5 has-text-primary">Crea un nuevo Desaf&iacute;o</h2>
+                    <h2 class="title is-3 has-text-centered mb-5 has-text-primary">
+                        {% if is_edit %}
+                            Editar Desafío
+                        {% else %}
+                            Crea un nuevo Desafío
+                        {% endif %}
+                    </h2>
                     
                     {% if messages %}
                         {% for message in messages %}
@@ -150,7 +156,13 @@
                         
                         <div class="field">
                             <div class="control">
-                                <button type="submit" class="button is-primary is-fullwidth">Crear Desafío</button>
+                                <button type="submit" class="button is-primary is-fullwidth">
+                                    {% if is_edit %}
+                                        Guardar Cambios
+                                    {% else %}
+                                        Crear Desafío
+                                    {% endif %}
+                                </button>
                             </div>
                         </div>
 

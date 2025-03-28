@@ -104,10 +104,12 @@ class ImageUploadForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        # Set default deadline to tomorrow at 12:00
-        tomorrow = datetime.now() + timedelta(days=1)
-        tomorrow_noon = tomorrow.replace(hour=12, minute=0, second=0, microsecond=0)
-        self.fields['deadline'].initial = tomorrow_noon
+        
+        # Set default deadline only for new events
+        if not self.instance.pk:
+            tomorrow = timezone.now() + timedelta(days=1)
+            tomorrow_noon = tomorrow.replace(hour=12, minute=0, second=0, microsecond=0)
+            self.fields['deadline'].initial = tomorrow_noon
 
         # Add debug info if DEBUG is enabled
         if settings.DEBUG:
@@ -121,6 +123,10 @@ class ImageUploadForm(forms.ModelForm):
         deadline = self.cleaned_data.get('deadline')
         now = timezone.now()
         
+        # For existing events, allow the current deadline
+        if self.instance.pk and deadline == self.instance.deadline:
+            return deadline
+        
         # Check if deadline is in the past
         if deadline <= now:
             raise ValidationError(_('La fecha límite debe ser en el futuro.'))
@@ -132,23 +138,12 @@ class ImageUploadForm(forms.ModelForm):
         
         return deadline
 
-    def clean(self):
-        cleaned_data = super().clean()
-        if settings.DEBUG:
-            # Collect debug information
-            cleaned_data["deadline"] = str(cleaned_data["deadline"])
-            debug_data = {
-                'form_errors': self.errors,
-                'non_field_errors': self.non_field_errors(),
-                'cleaned_data': cleaned_data,
-                'files': self.files,
-            }
-            cleaned_data['debug_info'] = json.dumps(debug_data, indent=2)
-        return cleaned_data
-
     def clean_image(self):
         image = self.cleaned_data.get('image')
         if not image:
+            # If no new image is provided and we're editing, return the existing image
+            if self.instance.pk and self.instance.image:
+                return self.instance.image
             return image
 
         # Check file size

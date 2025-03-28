@@ -1,4 +1,4 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import logout
 from django.contrib import messages
 from django.conf.urls.static import static
@@ -53,6 +53,38 @@ def create_event(request):
         "form": form, 
         "formset": formset,
         "debug": settings.DEBUG
+    })
+
+
+def edit_event(request, event_id):
+    event = get_object_or_404(Event, id=event_id)
+    
+    if request.method == "POST":
+        form = ImageUploadForm(request.POST, request.FILES, instance=event, label_suffix="")
+        formset = EventOptionFormSet(request.POST, instance=event)
+        
+        if form.is_valid() and formset.is_valid():
+            event = form.save()
+            formset.save()
+            messages.success(request, "Event updated successfully!")
+            return redirect("home")
+        else:
+            messages.error(request, "Error updating event. Please check the form.")
+            return render(request, "bets/create_event.html", {
+                "form": form, 
+                "formset": formset,
+                "debug": settings.DEBUG,
+                "is_edit": True
+            })
+    else:
+        form = ImageUploadForm(instance=event, label_suffix="")
+        formset = EventOptionFormSet(instance=event)
+
+    return render(request, "bets/create_event.html", {
+        "form": form, 
+        "formset": formset,
+        "debug": settings.DEBUG,
+        "is_edit": True
     })
 
 
