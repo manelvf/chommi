@@ -3,7 +3,7 @@ from django.contrib.auth import logout
 from django.contrib import messages
 from django.conf.urls.static import static
 
-from .forms import ImageUploadForm
+from .forms import ImageUploadForm, EventOptionFormSet
 
 
 def index(request):
@@ -27,17 +27,22 @@ def about(request):
 def create_event(request):
     if request.method == "POST":
         form = ImageUploadForm(request.POST, request.FILES, label_suffix="")
-        if form.is_valid():
-            form.save()
+        formset = EventOptionFormSet(request.POST, instance=form.instance if form.is_valid() else None)
+        
+        if form.is_valid() and formset.is_valid():
+            event = form.save()
+            formset.instance = event
+            formset.save()
             messages.success(request, "Event created successfully!")
             return redirect("home")
         else:
-            messages.error(request, f"Error creating event. Please check the form.")
-            return render(request, "bets/create_event.html", {"form": form})
+            messages.error(request, "Error creating event. Please check the form.")
+            return render(request, "bets/create_event.html", {"form": form, "formset": formset})
     else:
         form = ImageUploadForm(label_suffix="")
+        formset = EventOptionFormSet(instance=form.instance)
 
-    return render(request, "bets/create_event.html", {"form": form})
+    return render(request, "bets/create_event.html", {"form": form, "formset": formset})
 
 
 def service2(request):

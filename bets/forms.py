@@ -2,6 +2,43 @@ from django import forms
 from .models import Event, EventOption
 from datetime import datetime, timedelta
 from django.core.exceptions import ValidationError
+from django.forms import inlineformset_factory
+
+
+class EventOptionForm(forms.ModelForm):
+    class Meta:
+        model = EventOption
+        fields = ['title', 'initial_odds']
+        widgets = {
+            'title': forms.TextInput(attrs={'class': 'input'}),
+            'initial_odds': forms.NumberInput(attrs={'class': 'input', 'step': '0.01', 'min': '0.01'}),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Get the form's position in the formset
+        if 'prefix' in kwargs:
+            form_number = int(kwargs['prefix'].split('-')[-1]) + 1
+            self.fields['title'].label = f'Opción {form_number}'
+
+    def clean_initial_odds(self):
+        odds = self.cleaned_data.get('initial_odds')
+        if odds <= 0:
+            raise ValidationError('Las cuotas deben ser mayores a 0')
+        return odds
+
+
+EventOptionFormSet = inlineformset_factory(
+    Event,
+    EventOption,
+    form=EventOptionForm,
+    extra=1,
+    can_delete=True,
+    min_num=2,
+    max_num=7,
+    validate_min=True,
+    validate_max=True
+)
 
 
 class ImageUploadForm(forms.ModelForm):

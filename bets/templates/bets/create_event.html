@@ -13,12 +13,12 @@
 
 {% block content %}
 
-<section class="section is-large">
+<section class="section">
     <div class="container">
         <div class="columns is-centered">
             <div class="column is-half">
-                <div class="box has-background-info">
-                    <h2 class="title is-3 has-text-centered mb-5">Crea un nuevo Desaf&iacute;o</h2>
+                <div class="box has-background-primary-light">
+                    <h2 class="title is-3 has-text-centered mb-5 has-text-primary">Crea un nuevo Desaf&iacute;o</h2>
                     
                     {% if messages %}
                         {% for message in messages %}
@@ -40,7 +40,7 @@
                     <form method="post" enctype="multipart/form-data">
                         {% csrf_token %}
                         <div class="field">
-                            <label class="label">
+                            <label class="label has-text-primary">
                                 {{ form.title.label_tag }}
                                 {% if form.title.errors %}
                                     <span class="has-text-danger">*</span>
@@ -52,7 +52,7 @@
                         </div>
 
                         <div class="field">
-                            <label class="label">
+                            <label class="label has-text-primary">
                                 {{ form.deadline.label_tag }}
                                 {% if form.deadline.errors %}
                                     <span class="has-text-danger">*</span>
@@ -71,14 +71,14 @@
                         </div>
 
                         <div class="field">
-                            <label class="label">{{ form.description.label_tag }}</label>
+                            <label class="label has-text-primary">{{ form.description.label_tag }}</label>
                             <div class="control">
                                 {{ form.description|add_class:"textarea" }}
                             </div>
                         </div>
 
                         <div class="field">
-                            <label class="label">
+                            <label class="label has-text-primary">
                                 {{ form.image.label_tag }}
                                 {% if form.image.errors %}
                                     <span class="has-text-danger">*</span>
@@ -103,12 +103,62 @@
                         </div>
 
                         <div class="field">
-                            <label class="checkbox">{{ form.is_public|add_class:"checkbox" }} {{ form.is_public.label_tag }}</label>
+                            <label class="checkbox has-text-primary">{{ form.is_public|add_class:"checkbox" }} {{ form.is_public.label_tag }}</label>
+                        </div>
+
+                        <div class="box has-background-white-ter">
+                            <h3 class="title is-4 mb-4 has-text-primary">Opciones de la apuesta</h3>
+                            {{ formset.management_form }}
+                            <div id="options-container">
+                                {% for option_form in formset %}
+                                    {% if forloop.counter <= 2 %}
+                                        <div class="option-form box has-background-primary-light mb-4">
+                                            <div class="columns is-vcentered">
+                                                <div class="column">
+                                                    <div class="field">
+                                                        <label class="label has-text-primary">{{ option_form.title.label_tag }}</label>
+                                                        <div class="control">
+                                                            {{ option_form.title }}
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="column is-2">
+                                                    <div class="field">
+                                                        <label class="label has-text-primary">{{ option_form.initial_odds.label_tag }}</label>
+                                                        <div class="control">
+                                                            {{ option_form.initial_odds }}
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="column is-1">
+                                                    <div class="field">
+                                                        <label class="label">&nbsp;</label>
+                                                        <div class="control">
+                                                            {{ option_form.DELETE }}
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            {{ option_form.id }}
+                                        </div>
+                                    {% endif %}
+                                {% endfor %}
+                            </div>
+                            <div class="field">
+                                <div class="control">
+                                    <button type="button" class="button is-info is-outlined" id="add-option">
+                                        <span class="icon">
+                                            <i class="fas fa-plus"></i>
+                                        </span>
+                                        <span>Añadir Opción</span>
+                                    </button>
+                                </div>
+                            </div>
                         </div>
                         
                         <div class="field">
                             <div class="control">
-                                <button type="submit" class="button is-primary is-fullwidth">Upload</button>
+                                <button type="submit" class="button is-primary is-fullwidth">Crear Desafío</button>
                             </div>
                         </div>
                     </form>
@@ -127,6 +177,72 @@
         transform: scale(1.05);
         box-shadow: 0 10px 20px rgba(0,0,0,0.12), 0 4px 8px rgba(0,0,0,0.06);
     }
+    .has-background-primary-light {
+        background-color: #f5f9ff;
+    }
+    .has-background-white-ter {
+        background-color: #fafafa;
+    }
+    .box {
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .button.is-primary {
+        background-color: #3273dc;
+        transition: background-color 0.3s ease;
+    }
+    .button.is-primary:hover {
+        background-color: #2366d1;
+    }
+    .section {
+        padding-top: 2rem;
+        padding-bottom: 2rem;
+    }
+
+    /* Option form specific styling */
+    .option-form.box {
+        border: 1px solid rgba(50, 115, 220, 0.1);
+        box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+    }
 </style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const addButton = document.getElementById('add-option');
+    const container = document.getElementById('options-container');
+    const totalForms = document.getElementById('id_options-TOTAL_FORMS');
+    const maxForms = 7; // Maximum number of options allowed
+
+    addButton.addEventListener('click', function() {
+        const formCount = parseInt(totalForms.value);
+        
+        if (formCount >= maxForms) {
+            alert('No se pueden añadir más de 7 opciones');
+            return;
+        }
+
+        const newForm = container.children[0].cloneNode(true);
+        const formRegex = RegExp(`options-(\\d+)-`,'g');
+
+        // Update the form index
+        newForm.innerHTML = newForm.innerHTML.replace(formRegex, `options-${formCount}-`);
+        
+        // Clear the input values
+        newForm.querySelectorAll('input:not([type=hidden])').forEach(input => {
+            input.value = '';
+        });
+
+        // Update the label text
+        const titleLabel = newForm.querySelector('label');
+        titleLabel.textContent = `Opción ${formCount + 1}`;
+
+        // Add the new form
+        container.appendChild(newForm);
+        
+        // Update the total forms count
+        totalForms.value = formCount + 1;
+    });
+});
+</script>
 
 {% endblock %}
