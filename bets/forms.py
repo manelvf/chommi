@@ -5,6 +5,9 @@ from django.core.exceptions import ValidationError
 from django.forms import inlineformset_factory
 
 
+IMAGE_SIZE_LIMIT = 2 * 1024 * 1024
+
+
 class EventOptionForm(forms.ModelForm):
     class Meta:
         model = EventOption
@@ -66,6 +69,6 @@ class ImageUploadForm(forms.ModelForm):
     def clean_image(self):
         image = self.cleaned_data.get('image')
         if image:
-            if image.size > 2 * 1024 * 1024:  # 2MB in bytes
+            if image.size > IMAGE_SIZE_LIMIT:  # 2MB in bytes
                 raise ValidationError('La imagen no puede ser mayor a 2MB.')
         return image
