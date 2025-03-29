@@ -1,4 +1,4 @@
-{% extends "bets/base.html" %}
+{% extends "base.html" %}
 
 {% load form_filters %}
 
@@ -6,13 +6,11 @@
 
 {% block extra_css %}
     <link rel="stylesheet" href="{% static 'css/custom.css' %}">
-
 {% endblock %}
 
 {% block title %}Crea tu desafio{% endblock %}
 
 {% block content %}
-
 <section class="section">
     <div class="container">
         <div class="columns is-centered">
@@ -183,7 +181,6 @@
     </div>
 </section>
 
-{# Optional: Add some custom CSS for hover effect #}
 <style>
     .card {
         transition: transform 0.3s ease, box-shadow 0.3s ease;
@@ -259,5 +256,4 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 </script>
-
-{% endblock %}
+{% endblock %} 

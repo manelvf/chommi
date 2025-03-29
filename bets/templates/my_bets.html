@@ -1,0 +1,171 @@
+{% extends "base.html" %}
+
+{% block title %}{% trans "My Bets" %}{% endblock %}
+
+{% block content %}
+<section class="section">
+    <div class="container">
+        <h1 class="title is-2 has-text-primary mb-5">{% trans "My Bets" %}</h1>
+
+        <!-- Active Bets Section -->
+        <div class="box has-background-primary-light mb-5">
+            <h2 class="title is-3 has-text-primary mb-4">
+                {% trans "Active Bets" %}
+                <span class="tag is-primary is-pulled-right">{{ total_active_bets }}</span>
+            </h2>
+
+            {% if active_bets %}
+                <div class="columns is-multiline">
+                    {% for bet in active_bets %}
+                        <div class="column is-6">
+                            <div class="card">
+                                <div class="card-content">
+                                    <div class="media">
+                                        <div class="media-left">
+                                            {% if bet.event.image %}
+                                                <figure class="image is-64x64">
+                                                    <img src="{{ bet.event.image.url }}" alt="{{ bet.event.title }}">
+                                                </figure>
+                                            {% else %}
+                                                <figure class="image is-64x64">
+                                                    <img src="{% static 'images/default-event.jpg' %}" alt="Default event image">
+                                                </figure>
+                                            {% endif %}
+                                        </div>
+                                        <div class="media-content">
+                                            <p class="title is-4 has-text-primary">
+                                                <a href="{% url 'event_detail' bet.event.id %}">{{ bet.event.title }}</a>
+                                            </p>
+                                            <p class="subtitle is-6 has-text-primary">
+                                                {% trans "Your bet" %}: {{ bet.option.title }}
+                                            </p>
+                                        </div>
+                                    </div>
+
+                                    <div class="content mt-4">
+                                        <div class="columns is-multiline">
+                                            <div class="column is-6">
+                                                <p class="has-text-primary">
+                                                    <span class="icon">
+                                                        <i class="fas fa-clock"></i>
+                                                    </span>
+                                                    {% trans "Deadline" %}: {{ bet.event.deadline|date:"d/m/Y H:i" }}
+                                                </p>
+                                            </div>
+                                            <div class="column is-6">
+                                                <p class="has-text-primary">
+                                                    <span class="icon">
+                                                        <i class="fas fa-chart-line"></i>
+                                                    </span>
+                                                    {% trans "Current Odds" %}: {{ bet.odds|floatformat:2 }}
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="notification is-info">
+                    {% trans "You don't have any active bets at the moment." %}
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- Past Bets Section -->
+        <div class="box has-background-primary-light">
+            <h2 class="title is-3 has-text-primary mb-4">
+                {% trans "Past Bets" %}
+                <span class="tag is-primary is-pulled-right">{{ total_past_bets }}</span>
+            </h2>
+
+            {% if past_bets %}
+                <div class="columns is-multiline">
+                    {% for bet in past_bets %}
+                        <div class="column is-6">
+                            <div class="card">
+                                <div class="card-content">
+                                    <div class="media">
+                                        <div class="media-left">
+                                            {% if bet.event.image %}
+                                                <figure class="image is-64x64">
+                                                    <img src="{{ bet.event.image.url }}" alt="{{ bet.event.title }}">
+                                                </figure>
+                                            {% else %}
+                                                <figure class="image is-64x64">
+                                                    <img src="{% static 'images/default-event.jpg' %}" alt="Default event image">
+                                                </figure>
+                                            {% endif %}
+                                        </div>
+                                        <div class="media-content">
+                                            <p class="title is-4 has-text-primary">
+                                                <a href="{% url 'event_detail' bet.event.id %}">{{ bet.event.title }}</a>
+                                            </p>
+                                            <p class="subtitle is-6 has-text-primary">
+                                                {% trans "Your bet" %}: {{ bet.option.title }}
+                                            </p>
+                                        </div>
+                                    </div>
+
+                                    <div class="content mt-4">
+                                        <div class="columns is-multiline">
+                                            <div class="column is-6">
+                                                <p class="has-text-primary">
+                                                    <span class="icon">
+                                                        <i class="fas fa-calendar-check"></i>
+                                                    </span>
+                                                    {% trans "Ended" %}: {{ bet.event.deadline|date:"d/m/Y H:i" }}
+                                                </p>
+                                            </div>
+                                            <div class="column is-6">
+                                                <p class="has-text-primary">
+                                                    <span class="icon">
+                                                        <i class="fas fa-chart-line"></i>
+                                                    </span>
+                                                    {% trans "Final Odds" %}: {{ bet.odds|floatformat:2 }}
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="notification is-info">
+                    {% trans "You don't have any past bets." %}
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</section>
+
+<style>
+    .card {
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    }
+    .has-background-primary-light {
+        background-color: #f5f9ff;
+    }
+    .image.is-64x64 img {
+        border-radius: 4px;
+        object-fit: cover;
+    }
+    .tag.is-primary {
+        background-color: #3273dc;
+        color: white;
+    }
+    .notification {
+        border-radius: 4px;
+    }
+</style>
+{% endblock %} 

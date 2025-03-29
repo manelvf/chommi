@@ -30,11 +30,11 @@ def home(request):
         # Add more images...
     ]
 
-    return render(request, "bets/home.html", {"gallery_images": gallery_images})
+    return render(request, "home.html", {"gallery_images": gallery_images})
 
 
 def about(request):
-    return render(request, "bets/about.html")
+    return render(request, "about.html")
 
 
 def create_event(request):
@@ -54,7 +54,7 @@ def create_event(request):
             return redirect("home")
         else:
             messages.error(request, "Error creating event. Please check the form.")
-            return render(request, "bets/create_event.html", {
+            return render(request, "create_event.html", {
                 "form": form, 
                 "formset": formset,
                 "debug": settings.DEBUG
@@ -63,7 +63,7 @@ def create_event(request):
         form = ImageUploadForm(label_suffix="", creator=request.user)
         formset = EventOptionFormSet(instance=form.instance)
 
-    return render(request, "bets/create_event.html", {
+    return render(request, "create_event.html", {
         "form": form, 
         "formset": formset,
         "debug": settings.DEBUG
@@ -84,7 +84,7 @@ def edit_event(request, event_id):
             return redirect("home")
         else:
             messages.error(request, "Error updating event. Please check the form.")
-            return render(request, "bets/create_event.html", {
+            return render(request, "create_event.html", {
                 "form": form, 
                 "formset": formset,
                 "debug": settings.DEBUG,
@@ -94,7 +94,7 @@ def edit_event(request, event_id):
         form = ImageUploadForm(instance=event, label_suffix="")
         formset = EventOptionFormSet(instance=event)
 
-    return render(request, "bets/create_event.html", {
+    return render(request, "create_event.html", {
         "form": form, 
         "formset": formset,
         "debug": settings.DEBUG,
@@ -122,7 +122,7 @@ def logout_view(request):
 
 class CustomLoginView(LoginView):
     form_class = LoginForm
-    template_name = 'bets/login.html'
+    template_name = 'login.html'
     redirect_authenticated_user = True
 
     def form_valid(self, form):
@@ -145,7 +145,7 @@ def signup(request):
             messages.error(request, _('Please correct the errors below.'))
     else:
         form = CustomUserCreationForm()
-    return render(request, 'bets/signup.html', {'form': form})
+    return render(request, 'signup.html', {'form': form})
 
 
 EventOptionFormSet = inlineformset_factory(
@@ -177,7 +177,7 @@ def event_detail(request, event_id):
         'can_bet': event.deadline > timezone.now(),
         'is_creator': event.creator == request.user,
     }
-    return render(request, 'bets/event_detail.html', context)
+    return render(request, 'event_detail.html', context)
 
 
 @login_required
@@ -255,4 +255,4 @@ def my_bets(request):
         'total_past_bets': len(past_bets),
     }
     
-    return render(request, 'bets/my_bets.html', context)
+    return render(request, 'my_bets.html', context)

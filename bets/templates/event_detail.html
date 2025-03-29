@@ -1,0 +1,196 @@
+{% extends "base.html" %}
+
+{% block title %}{{ event.title }}{% endblock %}
+
+{% block content %}
+<section class="section">
+    <div class="container">
+        <div class="columns">
+            <div class="column is-8">
+                <!-- Event Image -->
+                <div class="box has-background-primary-light mb-4">
+                    {% if event.image %}
+                        <figure class="image is-16by9">
+                            <img src="{{ event.image.url }}" alt="{{ event.title }}">
+                        </figure>
+                    {% endif %}
+                </div>
+
+                <!-- Event Details -->
+                <div class="box has-background-primary-light">
+                    <h1 class="title is-2 has-text-primary mb-4">{{ event.title }}</h1>
+                    
+                    <div class="content">
+                        <p class="has-text-primary">{{ event.description }}</p>
+                        
+                        <div class="columns mt-4">
+                            <div class="column">
+                                <p class="has-text-primary">
+                                    <span class="icon">
+                                        <i class="fas fa-clock"></i>
+                                    </span>
+                                    <strong>{% trans "Deadline" %}:</strong> {{ event.deadline|date:"d/m/Y H:i" }}
+                                </p>
+                            </div>
+                            <div class="column">
+                                <p class="has-text-primary">
+                                    <span class="icon">
+                                        <i class="fas fa-user"></i>
+                                    </span>
+                                    <strong>{% trans "Created by" %}:</strong> {{ event.creator.username }}
+                                </p>
+                            </div>
+                        </div>
+
+                        {% if is_creator %}
+                            <div class="buttons mt-4">
+                                <a href="{% url 'edit_event' event.id %}" class="button is-primary">
+                                    <span class="icon">
+                                        <i class="fas fa-edit"></i>
+                                    </span>
+                                    <span>{% trans "Edit Event" %}</span>
+                                </a>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Betting Options -->
+                <div class="box has-background-primary-light mt-4">
+                    <h2 class="title is-3 has-text-primary mb-4">{% trans "Betting Options" %}</h2>
+                    
+                    {% if can_bet %}
+                        {% if user_bet %}
+                            <div class="notification is-info">
+                                {% trans "You have already placed a bet on this event." %}
+                            </div>
+                        {% else %}
+                            <form method="post" action="{% url 'place_bet' event.id %}">
+                                {% csrf_token %}
+                                <div class="columns is-multiline">
+                                    {% for option in options %}
+                                        <div class="column is-6">
+                                            <div class="box has-background-white-ter">
+                                                <label class="radio">
+                                                    <input type="radio" name="option" value="{{ option.id }}" required>
+                                                    <span class="has-text-primary">{{ option.title }}</span>
+                                                    <span class="tag is-primary is-pulled-right">
+                                                        {{ option.current_odds|floatformat:2 }}
+                                                    </span>
+                                                </label>
+                                            </div>
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                                <div class="field">
+                                    <div class="control">
+                                        <button type="submit" class="button is-primary is-fullwidth">
+                                            {% trans "Place Bet" %}
+                                        </button>
+                                    </div>
+                                </div>
+                            </form>
+                        {% endif %}
+                    {% else %}
+                        <div class="notification is-warning">
+                            {% trans "This event has ended. No more bets can be placed." %}
+                        </div>
+                    {% endif %}
+
+                    <!-- Current Bets -->
+                    <div class="mt-4">
+                        <h3 class="title is-4 has-text-primary">{% trans "Current Bets" %}</h3>
+                        <div class="table-container">
+                            <table class="table is-fullwidth">
+                                <thead>
+                                    <tr>
+                                        <th>{% trans "Option" %}</th>
+                                        <th>{% trans "Current Odds" %}</th>
+                                        <th>{% trans "Total Bets" %}</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for option in options %}
+                                        <tr>
+                                            <td>{{ option.title }}</td>
+                                            <td>{{ option.current_odds|floatformat:2 }}</td>
+                                            <td>{{ option.bets.count }}</td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sidebar -->
+            <div class="column is-4">
+                <div class="box has-background-primary-light">
+                    <h2 class="title is-4 has-text-primary">{% trans "Event Status" %}</h2>
+                    <div class="content">
+                        {% if can_bet %}
+                            <div class="notification is-success">
+                                <span class="icon">
+                                    <i class="fas fa-check-circle"></i>
+                                </span>
+                                {% trans "Open for betting" %}
+                            </div>
+                        {% else %}
+                            <div class="notification is-danger">
+                                <span class="icon">
+                                    <i class="fas fa-times-circle"></i>
+                                </span>
+                                {% trans "Event ended" %}
+                            </div>
+                        {% endif %}
+
+                        {% if user_bet %}
+                            <div class="notification is-info">
+                                <p class="has-text-primary">
+                                    <strong>{% trans "Your bet" %}:</strong> {{ user_bet.option.title }}
+                                </p>
+                                <p class="has-text-primary">
+                                    <strong>{% trans "Odds" %}:</strong> {{ user_bet.odds|floatformat:2 }}
+                                </p>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<style>
+    .box {
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .has-background-primary-light {
+        background-color: #f5f9ff;
+    }
+    .has-background-white-ter {
+        background-color: #fafafa;
+    }
+    .radio {
+        display: block;
+        padding: 0.5rem;
+        border-radius: 4px;
+        transition: background-color 0.3s ease;
+    }
+    .radio:hover {
+        background-color: #f0f7ff;
+    }
+    .tag.is-primary {
+        background-color: #3273dc;
+        color: white;
+    }
+    .table th {
+        background-color: #f5f9ff;
+    }
+    .notification {
+        border-radius: 4px;
+    }
+</style>
+{% endblock %} 
