@@ -1,3 +1,8 @@
+"""Forms module"""
+import imghdr
+import os
+import json
+
 from django import forms
 from .models import Event, EventOption
 from datetime import datetime, timedelta
@@ -9,9 +14,8 @@ from django.core.files import File
 from django.utils.translation import gettext_lazy as _
 from django.conf import settings
 from django.utils import timezone
-import imghdr
-import os
-import json
+from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth.models import User
 
 
 IMAGE_SIZE_LIMIT = 4 * 1024 * 1024
@@ -203,3 +207,36 @@ class ImageUploadForm(forms.ModelForm):
         if commit:
             instance.save()
         return instance
+
+
+class LoginForm(forms.Form):
+    username = forms.CharField(
+        widget=forms.TextInput(attrs={'class': 'input', 'placeholder': _('Username')}),
+        label=_('Username')
+    )
+    password = forms.CharField(
+        widget=forms.PasswordInput(attrs={'class': 'input', 'placeholder': _('Password')}),
+        label=_('Password')
+    )
+
+
+class CustomUserCreationForm(UserCreationForm):
+    email = forms.EmailField(
+        widget=forms.EmailInput(attrs={'class': 'input', 'placeholder': _('Email')}),
+        label=_('Email')
+    )
+
+    class Meta:
+        model = User
+        fields = ('username', 'email', 'password1', 'password2')
+        widgets = {
+            'username': forms.TextInput(attrs={'class': 'input', 'placeholder': _('Username')}),
+            'password1': forms.PasswordInput(attrs={'class': 'input', 'placeholder': _('Password')}),
+            'password2': forms.PasswordInput(attrs={'class': 'input', 'placeholder': _('Confirm Password')}),
+        }
+
+    def clean_email(self):
+        email = self.cleaned_data.get('email')
+        if User.objects.filter(email=email).exists():
+            raise ValidationError(_('This email is already registered.'))
+        return email
