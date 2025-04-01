@@ -43,6 +43,7 @@
                     
                     <form method="post" enctype="multipart/form-data">
                         {% csrf_token %}
+
                         <div class="field">
                             <label class="label has-text-primary">
                                 {{ form.title.label_tag }}
@@ -169,7 +170,8 @@
                                 <div class="control">
                                     <div class="box has-background-danger-light">
                                         <h4 class="title is-5 has-text-danger">Debug Information</h4>
-                                        <pre class="has-text-danger">{{ form.debug_info.value }}</pre>
+                                        <pre class="has-text-danger">{{ form.errors }}</pre>
+                                        <pre class="has-text-danger">{{ formset.errors }}</pre>
                                     </div>
                                 </div>
                             </div>
