@@ -4,10 +4,8 @@
 {% block title %}{{ title }}{% endblock %}
 
 {% block content %}
-<div class="container">
-    <h1 class="title has-text-centered has-text-primary" style="color: #e67e22 !important; text-shadow: 2px 2px 4px rgba(0,0,0,0.3);">
-        {{ title }}
-    </h1>
+<div class="container mt-4">
+    <h1 class="title has-text-primary">{{ title }}</h1>
 
     {% if events %}
         <div class="columns is-multiline">
@@ -24,27 +22,43 @@
                         <div class="card-content">
                             <p class="title is-4">{{ event.title }}</p>
                             <p class="subtitle is-6">
-                                {% trans "Created by" %} {{ event.user.username }}
+                                <span class="icon">
+                                    <i class="fas fa-user"></i>
+                                </span>
+                                {{ event.user.username }}
                             </p>
                             <div class="content">
-                                <p>{{ event.description|truncatewords:30 }}</p>
-                                <p>
-                                    <span class="icon">
-                                        <i class="fas fa-clock"></i>
-                                    </span>
-                                    {% trans "Deadline" %}: {{ event.deadline|date:"d/m/Y H:i" }}
-                                </p>
-                                {% if show_bet_count %}
-                                    <p>
-                                        <span class="icon">
-                                            <i class="fas fa-fire"></i>
-                                        </span>
-                                        {% trans "Bets" %}: {{ event.bet_count }}
-                                    </p>
-                                {% endif %}
+                                {{ event.description|truncatewords:30 }}
                             </div>
-                            <div class="buttons is-centered">
-                                <a href="{% url 'event_detail' event.id %}" class="button is-primary">
+                            <div class="level is-mobile">
+                                <div class="level-left">
+                                    <div class="level-item">
+                                        <span class="icon">
+                                            <i class="fas fa-clock"></i>
+                                        </span>
+                                        <span>{{ event.deadline|date:"d/m/Y H:i" }}</span>
+                                    </div>
+                                </div>
+                                <div class="level-right">
+                                    {% if show_bet_count %}
+                                        <div class="level-item">
+                                            <span class="icon">
+                                                <i class="fas fa-ticket-alt"></i>
+                                            </span>
+                                            <span>{{ event.bet_count }} {% trans "bets" %}</span>
+                                        </div>
+                                    {% elif show_event_count %}
+                                        <div class="level-item">
+                                            <span class="icon">
+                                                <i class="fas fa-calendar"></i>
+                                            </span>
+                                            <span>{{ event.created_at|date:"d/m/Y H:i" }}</span>
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="mt-4">
+                                <a href="{% url 'event_detail' event.id %}" class="button is-primary is-fullwidth">
                                     <span class="icon">
                                         <i class="fas fa-eye"></i>
                                     </span>
@@ -57,19 +71,18 @@
             {% endfor %}
         </div>
 
-        <!-- Pagination -->
-        {% if events.paginator.num_pages > 1 %}
+        {% if is_paginated %}
             <nav class="pagination is-centered mt-4" role="navigation" aria-label="pagination">
-                {% if events.has_previous %}
-                    <a href="?page={{ events.previous_page_number }}" class="pagination-previous">
+                {% if page_obj.has_previous %}
+                    <a href="?page={{ page_obj.previous_page_number }}" class="pagination-previous">
                         <span class="icon">
                             <i class="fas fa-chevron-left"></i>
                         </span>
                     </a>
                 {% endif %}
 
-                {% if events.has_next %}
-                    <a href="?page={{ events.next_page_number }}" class="pagination-next">
+                {% if page_obj.has_next %}
+                    <a href="?page={{ page_obj.next_page_number }}" class="pagination-next">
                         <span class="icon">
                             <i class="fas fa-chevron-right"></i>
                         </span>
@@ -77,19 +90,26 @@
                 {% endif %}
 
                 <ul class="pagination-list">
-                    {% for num in events.paginator.page_range %}
-                        {% if events.number == num %}
-                            <li><span class="pagination-link is-current" aria-label="Page {{ num }}" aria-current="page">{{ num }}</span></li>
-                        {% elif num > events.number|add:'-3' and num < events.number|add:'3' %}
-                            <li><a href="?page={{ num }}" class="pagination-link" aria-label="Goto page {{ num }}">{{ num }}</a></li>
+                    {% for num in page_obj.paginator.page_range %}
+                        {% if page_obj.number == num %}
+                            <li>
+                                <span class="pagination-link is-current" aria-label="Page {{ num }}" aria-current="page">{{ num }}</span>
+                            </li>
+                        {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                            <li>
+                                <a href="?page={{ num }}" class="pagination-link" aria-label="Goto page {{ num }}">{{ num }}</a>
+                            </li>
                         {% endif %}
                     {% endfor %}
                 </ul>
             </nav>
         {% endif %}
     {% else %}
-        <div class="notification is-info">
-            <p class="has-text-centered">{% trans "No events found." %}</p>
+        <div class="notification">
+            <span class="icon">
+                <i class="fas fa-info-circle"></i>
+            </span>
+            {% trans "No events found." %}
         </div>
     {% endif %}
 </div>

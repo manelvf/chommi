@@ -29,11 +29,8 @@ def home(request):
     recent_date = timezone.now() - timedelta(days=7)
     events = Event.objects.filter(
         Q(is_public=True),
-        bet__created_at__gte=recent_date
-    ).annotate(
-        bet_count=Count('bet')
-    ).order_by('-bet_count')
-    
+    )    
+
     # Paginate events
     paginator = Paginator(events, 12)  # Show 12 events per page
     page_number = request.GET.get('page')
@@ -43,6 +40,7 @@ def home(request):
         'events': page_obj,
         'title': _('Popular Events'),
         'show_bet_count': True,
+        'show_event_count': False,
     }
     return render(request, 'event_list.html', context)
 
@@ -287,6 +285,7 @@ def latest_events(request):
         'events': page_obj,
         'title': _('Latest Events'),
         'show_bet_count': False,
+        'show_event_count': True,
     }
     return render(request, 'event_list.html', context)
 
