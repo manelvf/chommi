@@ -1,0 +1,219 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Create Event" %}{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1 class="title has-text-primary">{% trans "Create Event" %}</h1>
+
+    <div class="columns">
+        <!-- Main Form Column -->
+        <div class="column is-8">
+            <form method="post" enctype="multipart/form-data" class="box">
+                {% csrf_token %}
+                
+                <!-- Creator Field (Hidden) -->
+                {{ form.creator }}
+                
+                <!-- Title Field -->
+                <div class="field">
+                    <label class="label">{% trans "Title" %}</label>
+                    <div class="control">
+                        {{ form.title }}
+                    </div>
+                    {% if form.title.errors %}
+                        <p class="help is-danger">{{ form.title.errors }}</p>
+                    {% endif %}
+                </div>
+
+                <!-- Description Field -->
+                <div class="field">
+                    <label class="label">{% trans "Description" %}</label>
+                    <div class="control">
+                        {{ form.description }}
+                    </div>
+                    {% if form.description.errors %}
+                        <p class="help is-danger">{{ form.description.errors }}</p>
+                    {% endif %}
+                </div>
+
+                <!-- Deadline Field -->
+                <div class="field">
+                    <label class="label">{% trans "Deadline" %}</label>
+                    <div class="control">
+                        {{ form.deadline }}
+                    </div>
+                    {% if form.deadline.errors %}
+                        <p class="help is-danger">{{ form.deadline.errors }}</p>
+                    {% endif %}
+                </div>
+
+                <!-- Image Upload Field -->
+                <div class="field">
+                    <label class="label">{% trans "Event Image" %}</label>
+                    <div class="control">
+                        {{ image_form.image }}
+                    </div>
+                    {% if image_form.image.errors %}
+                        <p class="help is-danger">{{ image_form.image.errors }}</p>
+                    {% endif %}
+                </div>
+
+                <!-- Options Section -->
+                <div class="field">
+                    <label class="label">{% trans "Options" %}</label>
+                    {{ option_formset.management_form }}
+                    <div id="options-container">
+                        {% for option_form in option_formset %}
+                            <div class="option-form box mb-4">
+                                <div class="level is-mobile">
+                                    <div class="level-left">
+                                        <div class="level-item">
+                                            <h3 class="subtitle is-5">{% trans "Option" %} {{ forloop.counter }}</h3>
+                                        </div>
+                                    </div>
+                                    <div class="level-right">
+                                        <div class="level-item">
+                                            <button type="button" class="button is-danger is-small remove-option">
+                                                <span class="icon">
+                                                    <i class="fas fa-trash"></i>
+                                                </span>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {{ option_form.id }}
+                                <div class="field">
+                                    <label class="label">{% trans "Text" %}</label>
+                                    <div class="control">
+                                        {{ option_form.text }}
+                                    </div>
+                                    {% if option_form.text.errors %}
+                                        <p class="help is-danger">{{ option_form.text.errors }}</p>
+                                    {% endif %}
+                                </div>
+
+                                <div class="field">
+                                    <label class="label">{% trans "Image" %}</label>
+                                    <div class="control">
+                                        {{ option_form.image }}
+                                    </div>
+                                    {% if option_form.image.errors %}
+                                        <p class="help is-danger">{{ option_form.image.errors }}</p>
+                                    {% endif %}
+                                </div>
+
+                                {{ option_form.DELETE }}
+                            </div>
+                        {% endfor %}
+                    </div>
+
+                    <div class="field">
+                        <div class="control">
+                            <button type="button" class="button is-info" id="add-option">
+                                <span class="icon">
+                                    <i class="fas fa-plus"></i>
+                                </span>
+                                <span>{% trans "Add Option" %}</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Submit Button -->
+                <div class="field">
+                    <div class="control">
+                        <button type="submit" class="button is-primary">
+                            <span class="icon">
+                                <i class="fas fa-save"></i>
+                            </span>
+                            <span>{% trans "Create Event" %}</span>
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+
+        <!-- Debug Info Column -->
+        <div class="column is-4">
+            <div class="box">
+                <h2 class="title is-4">{% trans "Debug Info" %}</h2>
+                
+                <!-- Form Errors -->
+                {% if form.errors or image_form.errors or option_formset.errors %}
+                    <div class="notification is-danger">
+                        <h3 class="subtitle is-5">{% trans "Form Errors" %}</h3>
+                        {% if form.errors %}
+                            <h4 class="subtitle is-6">{% trans "Main Form" %}</h4>
+                            {{ form.errors }}
+                        {% endif %}
+                        {% if image_form.errors %}
+                            <h4 class="subtitle is-6">{% trans "Image Form" %}</h4>
+                            {{ image_form.errors }}
+                        {% endif %}
+                        {% if option_formset.errors %}
+                            <h4 class="subtitle is-6">{% trans "Option Formset" %}</h4>
+                            {{ option_formset.errors }}
+                        {% endif %}
+                    </div>
+                {% endif %}
+
+                <!-- Form Data -->
+                <div class="notification">
+                    <h3 class="subtitle is-5">{% trans "Form Data" %}</h3>
+                    <pre id="form-data"></pre>
+                </div>
+
+                <!-- Formset Data -->
+                <div class="notification">
+                    <h3 class="subtitle is-5">{% trans "Formset Data" %}</h3>
+                    <pre id="formset-data"></pre>
+                </div>
+
+                <!-- Creator Info -->
+                <div class="notification">
+                    <h3 class="subtitle is-5">{% trans "Creator Info" %}</h3>
+                    <p>
+                        <strong>{% trans "Current User" %}:</strong> {{ request.user.username }}
+                    </p>
+                    <p>
+                        <strong>{% trans "Creator Field Value" %}:</strong> {{ form.creator.value|default:"Not set" }}
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // ... existing JavaScript code ...
+
+    // Update debug info
+    function updateDebugInfo() {
+        const formData = new FormData(document.querySelector('form'));
+        const formDataObj = {};
+        formData.forEach((value, key) => {
+            formDataObj[key] = value;
+        });
+        document.getElementById('form-data').textContent = JSON.stringify(formDataObj, null, 2);
+
+        const formsetData = {
+            totalForms: document.getElementById('id_options-TOTAL_FORMS').value,
+            initialForms: document.getElementById('id_options-INITIAL_FORMS').value,
+            minNumForms: document.getElementById('id_options-MIN_NUM_FORMS').value,
+            maxNumForms: document.getElementById('id_options-MAX_NUM_FORMS').value,
+        };
+        document.getElementById('formset-data').textContent = JSON.stringify(formsetData, null, 2);
+    }
+
+    // Update debug info when form changes
+    document.querySelector('form').addEventListener('change', updateDebugInfo);
+    updateDebugInfo();
+});
+</script>
+{% endblock %} 
