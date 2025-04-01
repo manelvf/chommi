@@ -122,8 +122,22 @@ def all_services(request):
     return render(request, "bets/all_services.html")
 
 
+@login_required
 def profile(request):
-    return render(request, "bets/profile.html")
+    user = request.user
+    created_events = Event.objects.filter(user=user).order_by('-created_at')
+    user_bets = Bet.objects.filter(user=user).order_by('-created_at')
+    
+    context = {
+        'user': user,
+        'created_events': created_events,
+        'user_bets': user_bets,
+        'total_events': created_events.count(),
+        'total_bets': user_bets.count(),
+        'winning_bets': user_bets.filter(option__is_winner=True).count(),
+    }
+    
+    return render(request, 'profile.html', context)
 
 
 def logout_view(request):

@@ -1,0 +1,170 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Profile" %}{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1 class="title has-text-primary">{% trans "Profile" %}</h1>
+
+    <div class="columns">
+        <!-- User Info Column -->
+        <div class="column is-4">
+            <div class="box">
+                <div class="level">
+                    <div class="level-item has-text-centered">
+                        <div>
+                            <p class="heading">{% trans "Username" %}</p>
+                            <p class="title">{{ user.username }}</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="level">
+                    <div class="level-item has-text-centered">
+                        <div>
+                            <p class="heading">{% trans "Member since" %}</p>
+                            <p class="title is-5">{{ user.date_joined|date:"d/m/Y" }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Statistics Box -->
+            <div class="box">
+                <h2 class="title is-4">{% trans "Statistics" %}</h2>
+                <div class="level is-mobile">
+                    <div class="level-item has-text-centered">
+                        <div>
+                            <p class="heading">{% trans "Events Created" %}</p>
+                            <p class="title">{{ total_events }}</p>
+                        </div>
+                    </div>
+                    <div class="level-item has-text-centered">
+                        <div>
+                            <p class="heading">{% trans "Total Bets" %}</p>
+                            <p class="title">{{ total_bets }}</p>
+                        </div>
+                    </div>
+                    <div class="level-item has-text-centered">
+                        <div>
+                            <p class="heading">{% trans "Winning Bets" %}</p>
+                            <p class="title">{{ winning_bets }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Events Column -->
+        <div class="column is-8">
+            <!-- Created Events -->
+            <div class="box">
+                <h2 class="title is-4">{% trans "Events Created" %}</h2>
+                {% if created_events %}
+                    <div class="columns is-multiline">
+                        {% for event in created_events %}
+                            <div class="column is-6">
+                                <div class="card">
+                                    {% if event.image %}
+                                        <div class="card-image" style="background-image: url('{{ event.image.url }}')"></div>
+                                    {% endif %}
+                                    <div class="card-content">
+                                        <p class="title is-4">{{ event.title }}</p>
+                                        <p class="subtitle is-6">
+                                            <span class="icon">
+                                                <i class="fas fa-clock"></i>
+                                            </span>
+                                            {{ event.deadline|date:"d/m/Y H:i" }}
+                                        </p>
+                                        <div class="content">
+                                            {{ event.description|truncatewords:20 }}
+                                        </div>
+                                        <div class="mt-4">
+                                            <a href="{% url 'event_detail' event.id %}" class="button is-primary is-fullwidth">
+                                                <span class="icon">
+                                                    <i class="fas fa-eye"></i>
+                                                </span>
+                                                <span>{% trans "View Details" %}</span>
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="notification">
+                        <span class="icon">
+                            <i class="fas fa-info-circle"></i>
+                        </span>
+                        {% trans "You haven't created any events yet." %}
+                    </div>
+                {% endif %}
+            </div>
+
+            <!-- User Bets -->
+            <div class="box">
+                <h2 class="title is-4">{% trans "Your Bets" %}</h2>
+                {% if user_bets %}
+                    <div class="table-container">
+                        <table class="table is-fullwidth">
+                            <thead>
+                                <tr>
+                                    <th>{% trans "Event" %}</th>
+                                    <th>{% trans "Option" %}</th>
+                                    <th>{% trans "Date" %}</th>
+                                    <th>{% trans "Status" %}</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for bet in user_bets %}
+                                    <tr>
+                                        <td>
+                                            <a href="{% url 'event_detail' bet.event.id %}">
+                                                {{ bet.event.title }}
+                                            </a>
+                                        </td>
+                                        <td>{{ bet.option.text }}</td>
+                                        <td>{{ bet.created_at|date:"d/m/Y H:i" }}</td>
+                                        <td>
+                                            {% if bet.option.is_winner %}
+                                                <span class="tag is-success">
+                                                    <span class="icon">
+                                                        <i class="fas fa-trophy"></i>
+                                                    </span>
+                                                    <span>{% trans "Won" %}</span>
+                                                </span>
+                                            {% elif bet.event.deadline < now %}
+                                                <span class="tag is-danger">
+                                                    <span class="icon">
+                                                        <i class="fas fa-times"></i>
+                                                    </span>
+                                                    <span>{% trans "Lost" %}</span>
+                                                </span>
+                                            {% else %}
+                                                <span class="tag is-info">
+                                                    <span class="icon">
+                                                        <i class="fas fa-clock"></i>
+                                                    </span>
+                                                    <span>{% trans "Pending" %}</span>
+                                                </span>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="notification">
+                        <span class="icon">
+                            <i class="fas fa-info-circle"></i>
+                        </span>
+                        {% trans "You haven't placed any bets yet." %}
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 
