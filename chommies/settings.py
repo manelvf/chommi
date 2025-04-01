@@ -121,15 +121,13 @@ STATIC_URL = "static/"
 
 STATICFILES_DIRS = [
     BASE_DIR / "bets" / "static",
+    BASE_DIR / "static",
 ]
 
 STATIC_ROOT = BASE_DIR / "staticfiles"
 
 # Serve static files directly in development
 if DEBUG:
-    STATICFILES_DIRS = [
-        BASE_DIR / "bets" / "static",
-    ]
     STATIC_ROOT = None  # Disable collectstatic in development
 
 # Default primary key field type

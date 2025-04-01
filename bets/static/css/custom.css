@@ -317,10 +317,6 @@ body {
         box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     }
 
-    .navbar-item {
-        padding: 1rem 1.5rem;
-    }
-
     .navbar-item:hover {
         background-color: var(--primary-dark) !important;
     }
@@ -354,4 +350,27 @@ body {
     color: var(--text-light) !important;
     font-weight: 500;
     text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
-} 
+}
+
+/* Logo Styles */
+.navbar-item img {
+    max-height: 3.5rem;
+    width: auto;
+    padding: 0.5rem 0;
+}
+
+.navbar-item .ml-2 {
+    margin-left: 1rem;
+    font-weight: 600;
+    color: var(--text-light);
+    font-size: 1.25rem;
+}
+
+/* Navbar Styles */
+.navbar {
+    min-height: 4.5rem;
+}
+
+.navbar-brand {
+    min-height: 4.5rem;
+}
