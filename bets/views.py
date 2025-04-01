@@ -17,20 +17,34 @@ from django.contrib.auth.views import LoginView
 from django.urls import reverse_lazy
 from .forms import ImageUploadForm, EventOptionForm, CustomUserCreationForm, LoginForm, CustomEventOptionFormSet
 from .models import Event, EventOption, Gambler, Bet
+from django.db.models import Count
+from django.db.models import Q
+from django.core.paginator import Paginator
+from datetime import timedelta
 
 
 def home(request):
-    gallery_images = [
-        {
-            "url": static("images/image1.jpg"),
-            "alt": "First Image",
-            "title": "Amazing Landscape with Mountains and a River",
-            "description": "A beautiful scene from our collection",
-        },
-        # Add more images...
-    ]
-
-    return render(request, "home.html", {"gallery_images": gallery_images})
+    """Home page view showing popular events"""
+    # Get events with the most bets in the last 7 days
+    recent_date = timezone.now() - timedelta(days=7)
+    events = Event.objects.filter(
+        Q(is_public=True),
+        bet__created_at__gte=recent_date
+    ).annotate(
+        bet_count=Count('bet')
+    ).order_by('-bet_count')
+    
+    # Paginate events
+    paginator = Paginator(events, 12)  # Show 12 events per page
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    
+    context = {
+        'events': page_obj,
+        'title': _('Popular Events'),
+        'show_bet_count': True,
+    }
+    return render(request, 'event_list.html', context)
 
 
 def about(request):
@@ -256,3 +270,46 @@ def my_bets(request):
     }
     
     return render(request, 'my_bets.html', context)
+
+
+def latest_events(request):
+    """View for displaying the latest events"""
+    events = Event.objects.filter(
+        Q(is_public=True) | Q(user=request.user)
+    ).order_by('-created_at')
+    
+    # Paginate events
+    paginator = Paginator(events, 12)  # Show 12 events per page
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    
+    context = {
+        'events': page_obj,
+        'title': _('Latest Events'),
+        'show_bet_count': False,
+    }
+    return render(request, 'event_list.html', context)
+
+
+def popular_events(request):
+    """View for displaying the most popular events"""
+    # Get events with the most bets in the last 7 days
+    recent_date = timezone.now() - timedelta(days=7)
+    events = Event.objects.filter(
+        Q(is_public=True) | Q(user=request.user),
+        bets__created_at__gte=recent_date
+    ).annotate(
+        bet_count=Count('bets')
+    ).order_by('-bet_count')
+    
+    # Paginate events
+    paginator = Paginator(events, 12)  # Show 12 events per page
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    
+    context = {
+        'events': page_obj,
+        'title': _('Popular Events'),
+        'show_bet_count': True,
+    }
+    return render(request, 'event_list.html', context)

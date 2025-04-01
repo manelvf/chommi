@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1 class="title has-text-centered">{{ title }}</h1>
+
+    {% if events %}
+        <div class="columns is-multiline">
+            {% for event in events %}
+                <div class="column is-4">
+                    <div class="card">
+                        {% if event.image %}
+                            <div class="card-image">
+                                <figure class="image is-4by3">
+                                    <img src="{{ event.image.url }}" alt="{{ event.title }}">
+                                </figure>
+                            </div>
+                        {% endif %}
+                        <div class="card-content">
+                            <p class="title is-4">{{ event.title }}</p>
+                            <p class="subtitle is-6">
+                                {% trans "Created by" %} {{ event.user.username }}
+                            </p>
+                            <div class="content">
+                                <p>{{ event.description|truncatewords:30 }}</p>
+                                <p>
+                                    <span class="icon">
+                                        <i class="fas fa-clock"></i>
+                                    </span>
+                                    {% trans "Deadline" %}: {{ event.deadline|date:"d/m/Y H:i" }}
+                                </p>
+                                <p>
+                                    <span class="icon">
+                                        <i class="fas fa-fire"></i>
+                                    </span>
+                                    {% trans "Bets" %}: {{ event.bet_count }}
+                                </p>
+                            </div>
+                            <div class="buttons is-centered">
+                                <a href="{% url 'event_detail' event.id %}" class="button is-primary">
+                                    <span class="icon">
+                                        <i class="fas fa-eye"></i>
+                                    </span>
+                                    <span>{% trans "View Details" %}</span>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+
+        <!-- Pagination -->
+        {% if events.paginator.num_pages > 1 %}
+            <nav class="pagination is-centered mt-4" role="navigation" aria-label="pagination">
+                {% if events.has_previous %}
+                    <a href="?page={{ events.previous_page_number }}" class="pagination-previous">
+                        <span class="icon">
+                            <i class="fas fa-chevron-left"></i>
+                        </span>
+                    </a>
+                {% endif %}
+
+                {% if events.has_next %}
+                    <a href="?page={{ events.next_page_number }}" class="pagination-next">
+                        <span class="icon">
+                            <i class="fas fa-chevron-right"></i>
+                        </span>
+                    </a>
+                {% endif %}
+
+                <ul class="pagination-list">
+                    {% for num in events.paginator.page_range %}
+                        {% if events.number == num %}
+                            <li><span class="pagination-link is-current" aria-label="Page {{ num }}" aria-current="page">{{ num }}</span></li>
+                        {% elif num > events.number|add:'-3' and num < events.number|add:'3' %}
+                            <li><a href="?page={{ num }}" class="pagination-link" aria-label="Goto page {{ num }}">{{ num }}</a></li>
+                        {% endif %}
+                    {% endfor %}
+                </ul>
+            </nav>
+        {% endif %}
+    {% else %}
+        <div class="notification is-info">
+            <p class="has-text-centered">{% trans "No events found." %}</p>
+        </div>
+    {% endif %}
+</div>
+{% endblock %} 
