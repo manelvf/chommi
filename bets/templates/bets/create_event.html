@@ -27,6 +27,17 @@
                     {% endif %}
                 </div>
 
+                <!-- Subtitle Field -->
+                <div class="field">
+                    <label class="label">{% trans "Subtitle" %} <span class="has-text-grey-light">{% trans "(Optional)" %}</span></label>
+                    <div class="control">
+                        {{ form.subtitle }}
+                    </div>
+                    {% if form.subtitle.errors %}
+                        <p class="help is-danger">{{ form.subtitle.errors }}</p>
+                    {% endif %}
+                </div>
+
                 <!-- Description Field -->
                 <div class="field">
                     <label class="label">{% trans "Description" %}</label>

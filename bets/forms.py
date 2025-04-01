@@ -239,3 +239,16 @@ class CustomUserCreationForm(UserCreationForm):
         if User.objects.filter(email=email).exists():
             raise ValidationError(_('This email is already registered.'))
         return email
+
+
+class EventForm(forms.ModelForm):
+    class Meta:
+        model = Event
+        fields = ["title", "subtitle", "description", "deadline"]
+        widgets = {
+            "title": forms.TextInput(attrs={"class": "input"}),
+            "subtitle": forms.TextInput(attrs={"class": "input"}),
+            "description": forms.Textarea(attrs={"class": "textarea"}),
+            "deadline": forms.DateTimeInput(attrs={"class": "input", "type": "datetime-local"}),
+        }
+        required_fields = ["title", "description", "deadline"]  # subtitle is not required

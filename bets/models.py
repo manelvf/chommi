@@ -11,17 +11,22 @@ class Gambler(models.Model):
 
 
 class Event(models.Model):
-    title = models.CharField(max_length=255)
-    subtitle = models.CharField(max_length=255)
+    title = models.CharField(max_length=200)
+    subtitle = models.CharField(max_length=200, blank=True, null=True)
     description = models.TextField()
-    image = models.ImageField(upload_to="uploads/", null=True, blank=True)
+    image = models.ImageField(upload_to="events/", null=True, blank=True)
+    deadline = models.DateTimeField()
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    deadline = models.DateTimeField()
-    is_active = models.BooleanField(default=True)
     is_public = models.BooleanField(default=True)
-    is_finished = models.BooleanField(default=False)
-    creator = models.ForeignKey(User, on_delete=models.CASCADE, related_name='events')
+    creator = models.ForeignKey(User, on_delete=models.CASCADE, related_name="created_events")
+    winner = models.ForeignKey(
+        "EventOption",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="won_events",
+    )
 
     def __str__(self):
         return self.title
