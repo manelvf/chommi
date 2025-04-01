@@ -374,3 +374,35 @@ body {
 .navbar-brand {
     min-height: 4.5rem;
 }
+
+/* Container and Title Alignment */
+.container {
+    padding: 0 1rem;
+}
+
+@media screen and (max-width: 768px) {
+    .container {
+        padding: 0 0.75rem;
+    }
+
+    .title.has-text-primary {
+        margin-left: 0.75rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .card-content {
+        padding: 1rem;
+    }
+
+    .card .title {
+        font-size: 1.25rem;
+    }
+
+    .card .subtitle {
+        font-size: 0.9rem;
+    }
+
+    .card .content {
+        font-size: 0.9rem;
+    }
+}
