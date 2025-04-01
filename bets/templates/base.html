@@ -2,7 +2,7 @@
 {% load i18n %}
 
 <!DOCTYPE html>
-<html lang="es">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -24,8 +24,16 @@
     <nav class="navbar is-primary" role="navigation" aria-label="main navigation">
         <div class="navbar-brand">
             <a class="navbar-item" href="{% url 'home' %}">
-                <img src="{% static 'images/logo.png' %}" alt="Chommies Logo">
-                <span class="ml-2">Chommies</span>
+                <span class="icon">
+                    <i class="fas fa-ticket-alt"></i>
+                </span>
+                <span>Chommies</span>
+            </a>
+
+            <a role="button" class="navbar-burger" aria-label="menu" aria-expanded="false">
+                <span aria-hidden="true"></span>
+                <span aria-hidden="true"></span>
+                <span aria-hidden="true"></span>
             </a>
         </div>
 
@@ -49,48 +57,63 @@
                     </span>
                     <span>{% trans "Popular Events" %}</span>
                 </a>
-                {% if user.is_authenticated %}
-                    <a class="navbar-item" href="{% url 'create_event' %}">
-                        <span class="icon">
-                            <i class="fas fa-plus-circle"></i>
-                        </span>
-                        <span>{% trans "Create Event" %}</span>
-                    </a>
-                    <a class="navbar-item" href="{% url 'my_bets' %}">
-                        <span class="icon">
-                            <i class="fas fa-ticket-alt"></i>
-                        </span>
-                        <span>{% trans "My Bets" %}</span>
-                    </a>
-                {% endif %}
+                <a class="navbar-item" href="{% url 'create_event' %}">
+                    <span class="icon">
+                        <i class="fas fa-plus"></i>
+                    </span>
+                    <span>{% trans "Create Event" %}</span>
+                </a>
             </div>
 
             <div class="navbar-end">
-                <div class="navbar-item">
-                    <div class="buttons">
-                        {% if user.is_authenticated %}
-                            <a class="button is-light" href="{% url 'logout' %}">
+                {% if user.is_authenticated %}
+                    <div class="navbar-item has-dropdown is-hoverable">
+                        <a class="navbar-link">
+                            <span class="icon">
+                                <i class="fas fa-user"></i>
+                            </span>
+                            <span>{{ user.username }}</span>
+                        </a>
+                        <div class="navbar-dropdown is-right">
+                            <a class="navbar-item" href="{% url 'profile' %}">
+                                <span class="icon">
+                                    <i class="fas fa-user-circle"></i>
+                                </span>
+                                <span>{% trans "Profile" %}</span>
+                            </a>
+                            <a class="navbar-item" href="{% url 'my_bets' %}">
+                                <span class="icon">
+                                    <i class="fas fa-ticket-alt"></i>
+                                </span>
+                                <span>{% trans "My Bets" %}</span>
+                            </a>
+                            <hr class="navbar-divider">
+                            <a class="navbar-item" href="{% url 'logout' %}">
                                 <span class="icon">
                                     <i class="fas fa-sign-out-alt"></i>
                                 </span>
                                 <span>{% trans "Logout" %}</span>
                             </a>
-                        {% else %}
+                        </div>
+                    </div>
+                {% else %}
+                    <div class="navbar-item">
+                        <div class="buttons">
                             <a class="button is-light" href="{% url 'login' %}">
                                 <span class="icon">
                                     <i class="fas fa-sign-in-alt"></i>
                                 </span>
                                 <span>{% trans "Login" %}</span>
                             </a>
-                            <a class="button is-primary" href="{% url 'signup' %}">
+                            <a class="button is-primary" href="{% url 'register' %}">
                                 <span class="icon">
                                     <i class="fas fa-user-plus"></i>
                                 </span>
-                                <span>{% trans "Sign Up" %}</span>
+                                <span>{% trans "Register" %}</span>
                             </a>
-                        {% endif %}
+                        </div>
                     </div>
-                </div>
+                {% endif %}
             </div>
         </div>
     </nav>
@@ -133,6 +156,25 @@
 
     <!-- JavaScript -->
     <script src="https://cdn.jsdelivr.net/npm/bulma@0.9.4/js/bulma.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Get all "navbar-burger" elements
+            const $navbarBurgers = Array.prototype.slice.call(document.querySelectorAll('.navbar-burger'), 0);
+
+            // Add a click event on each of them
+            $navbarBurgers.forEach(el => {
+                el.addEventListener('click', () => {
+                    // Get the target from the "data-target" attribute
+                    const target = el.dataset.target;
+                    const $target = document.getElementById(target);
+
+                    // Toggle the "is-active" class on both the "navbar-burger" and the "navbar-menu"
+                    el.classList.toggle('is-active');
+                    $target.classList.toggle('is-active');
+                });
+            });
+        });
+    </script>
     {% block extra_js %}{% endblock %}
 </body>
 </html> 

@@ -13,11 +13,7 @@
                 <div class="column is-4">
                     <div class="card">
                         {% if event.image %}
-                            <div class="card-image">
-                                <figure class="image is-4by3">
-                                    <img src="{{ event.image.url }}" alt="{{ event.title }}">
-                                </figure>
-                            </div>
+                            <div class="card-image" style="background-image: url('{{ event.image.url }}')"></div>
                         {% endif %}
                         <div class="card-content">
                             <p class="title is-4">{{ event.title }}</p>
