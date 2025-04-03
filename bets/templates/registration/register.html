@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Register" %}{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="columns is-centered">
+        <div class="column is-6">
+            <div class="box">
+                <h1 class="title has-text-centered has-text-primary">{% trans "Register" %}</h1>
+
+                <form method="post">
+                    {% csrf_token %}
+                    
+                    <!-- Username Field -->
+                    <div class="field">
+                        <label class="label">{% trans "Username" %}</label>
+                        <div class="control">
+                            {{ form.username }}
+                        </div>
+                        {% if form.username.errors %}
+                            <p class="help is-danger">{{ form.username.errors }}</p>
+                        {% endif %}
+                    </div>
+
+                    <!-- Email Field -->
+                    <div class="field">
+                        <label class="label">{% trans "Email" %}</label>
+                        <div class="control">
+                            {{ form.email }}
+                        </div>
+                        {% if form.email.errors %}
+                            <p class="help is-danger">{{ form.email.errors }}</p>
+                        {% endif %}
+                    </div>
+
+                    <!-- Password Field -->
+                    <div class="field">
+                        <label class="label">{% trans "Password" %}</label>
+                        <div class="control">
+                            {{ form.password1 }}
+                        </div>
+                        {% if form.password1.errors %}
+                            <p class="help is-danger">{{ form.password1.errors }}</p>
+                        {% endif %}
+                    </div>
+
+                    <!-- Password Confirmation Field -->
+                    <div class="field">
+                        <label class="label">{% trans "Confirm Password" %}</label>
+                        <div class="control">
+                            {{ form.password2 }}
+                        </div>
+                        {% if form.password2.errors %}
+                            <p class="help is-danger">{{ form.password2.errors }}</p>
+                        {% endif %}
+                    </div>
+
+                    <!-- Form Errors -->
+                    {% if form.non_field_errors %}
+                        <div class="notification is-danger">
+                            {{ form.non_field_errors }}
+                        </div>
+                    {% endif %}
+
+                    <!-- Submit Button -->
+                    <div class="field">
+                        <div class="control">
+                            <button type="submit" class="button is-primary is-fullwidth">
+                                <span class="icon">
+                                    <i class="fas fa-user-plus"></i>
+                                </span>
+                                <span>{% trans "Register" %}</span>
+                            </button>
+                        </div>
+                    </div>
+                </form>
+
+                <div class="has-text-centered mt-4">
+                    <p>
+                        {% trans "Already have an account?" %}
+                        <a href="{% url 'login' %}" class="has-text-primary">
+                            {% trans "Login here" %}
+                        </a>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 
