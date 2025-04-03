@@ -252,3 +252,38 @@ class EventForm(forms.ModelForm):
             "deadline": forms.DateTimeInput(attrs={"class": "input", "type": "datetime-local"}),
         }
         required_fields = ["title", "description", "deadline"]  # subtitle is not required
+
+
+class UserRegistrationForm(UserCreationForm):
+    email = forms.EmailField(required=True)
+    username = forms.CharField(max_length=150, required=True)
+    password1 = forms.CharField(
+        label=_("Password"),
+        strip=False,
+        widget=forms.PasswordInput(attrs={"class": "input"}),
+    )
+    password2 = forms.CharField(
+        label=_("Password confirmation"),
+        strip=False,
+        widget=forms.PasswordInput(attrs={"class": "input"}),
+    )
+
+    class Meta:
+        model = User
+        fields = ["username", "email", "password1", "password2"]
+        widgets = {
+            "username": forms.TextInput(attrs={"class": "input"}),
+            "email": forms.EmailInput(attrs={"class": "input"}),
+        }
+
+    def clean_email(self):
+        email = self.cleaned_data.get("email")
+        if User.objects.filter(email=email).exists():
+            raise ValidationError(_("This email is already registered."))
+        return email
+
+    def clean_username(self):
+        username = self.cleaned_data.get("username")
+        if User.objects.filter(username=username).exists():
+            raise ValidationError(_("This username is already taken."))
+        return username

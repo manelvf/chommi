@@ -15,7 +15,7 @@ from django.http import JsonResponse
 from django.views.decorators.http import require_POST
 from django.contrib.auth.views import LoginView
 from django.urls import reverse_lazy
-from .forms import ImageUploadForm, EventOptionForm, CustomUserCreationForm, LoginForm, CustomEventOptionFormSet
+from .forms import ImageUploadForm, EventOptionForm, CustomUserCreationForm, LoginForm, CustomEventOptionFormSet, UserRegistrationForm
 from .models import Event, EventOption, Gambler, Bet
 from django.db.models import Count
 from django.db.models import Q
@@ -326,3 +326,16 @@ def popular_events(request):
         'show_bet_count': True,
     }
     return render(request, 'event_list.html', context)
+
+
+def register(request):
+    if request.method == "POST":
+        form = UserRegistrationForm(request.POST)
+        if form.is_valid():
+            user = form.save()
+            login(request, user)
+            messages.success(request, _("Registration successful!"))
+            return redirect("home")
+    else:
+        form = UserRegistrationForm()
+    return render(request, "registration/register.html", {"form": form})
