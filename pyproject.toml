@@ -10,6 +10,7 @@ package-mode = false
 python = "^3.11"
 django = "^5.1.7"
 pillow = "^11.1.0"
+celery = "^5.5.0"
 
 
 [build-system]
