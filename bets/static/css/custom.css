@@ -276,6 +276,14 @@ body {
     margin-top: 2rem;
 }
 
+.footer .content {
+    color: var(--text-light) !important;
+}
+
+.footer .content strong {
+    color: var(--primary-color) !important;
+}
+
 .footer a {
     color: var(--text-color);
     transition: color 0.2s;
