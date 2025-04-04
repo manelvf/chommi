@@ -406,3 +406,76 @@ body {
         font-size: 0.9rem;
     }
 }
+
+/* Date Input Styles */
+.date-input {
+    width: 10em !important;
+    display: inline-block !important;
+}
+
+/* Auth Input Styles */
+.auth-input {
+    width: 200px !important;
+    display: inline-block !important;
+    background-color: #2c3e50 !important;
+    border: 1px solid var(--primary-color) !important;
+    color: var(--text-light) !important;
+}
+
+.auth-input:focus {
+    background-color: #243342 !important;
+    border-color: var(--accent-color) !important;
+    box-shadow: 0 0 0 0.125em rgba(231, 76, 60, 0.25) !important;
+}
+
+.auth-input::placeholder {
+    color: #95a5a6 !important;
+}
+
+/* Registration Form Styles */
+.registration-box {
+    padding: 2rem;
+    max-width: 400px;
+    margin: 0 auto;
+}
+
+.registration-form .field {
+    margin-bottom: 1.5rem;
+}
+
+.registration-form .control {
+    display: block;
+}
+
+.registration-form .label {
+    text-align: left;
+    margin-bottom: 0.5rem;
+    color: var(--text-light) !important;
+}
+
+.registration-form .help {
+    text-align: left;
+    color: #95a5a6;
+}
+
+.registration-form .button {
+    margin-top: 1rem;
+}
+
+/* Login Link Styles */
+.login-link {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--text-light);
+}
+
+.login-link a {
+    font-weight: 600;
+    text-decoration: underline;
+}
+
+.login-link a:hover {
+    color: var(--accent-color) !important;
+}

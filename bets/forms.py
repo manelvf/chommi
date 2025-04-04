@@ -255,22 +255,49 @@ class EventForm(forms.ModelForm):
 
 
 class UserRegistrationForm(UserCreationForm):
-    email = forms.EmailField(required=True)
-    username = forms.CharField(max_length=150, required=True)
+    email = forms.EmailField(
+        required=True,
+        widget=forms.EmailInput(attrs={
+            "class": "input auth-input",
+            "autocomplete": "email"
+        })
+    )
+    username = forms.CharField(
+        max_length=150,
+        required=True,
+        widget=forms.TextInput(attrs={
+            "class": "input auth-input",
+            "autocomplete": "username"
+        })
+    )
+    date_of_birth = forms.DateField(
+        required=True,
+        widget=forms.DateInput(attrs={
+            'class': 'input date-input',
+            'type': 'date',
+            'max': timezone.now().date().isoformat()
+        })
+    )
     password1 = forms.CharField(
         label=_("Password"),
         strip=False,
-        widget=forms.PasswordInput(attrs={"class": "input"}),
+        widget=forms.PasswordInput(attrs={
+            "class": "input auth-input",
+            "autocomplete": "new-password"
+        }),
     )
     password2 = forms.CharField(
         label=_("Password confirmation"),
         strip=False,
-        widget=forms.PasswordInput(attrs={"class": "input"}),
+        widget=forms.PasswordInput(attrs={
+            "class": "input auth-input",
+            "autocomplete": "new-password"
+        }),
     )
 
     class Meta:
         model = User
-        fields = ["username", "email", "password1", "password2"]
+        fields = ["username", "email", "date_of_birth", "password1", "password2"]
         widgets = {
             "username": forms.TextInput(attrs={"class": "input"}),
             "email": forms.EmailInput(attrs={"class": "input"}),
@@ -287,3 +314,12 @@ class UserRegistrationForm(UserCreationForm):
         if User.objects.filter(username=username).exists():
             raise ValidationError(_("This username is already taken."))
         return username
+
+    def clean_date_of_birth(self):
+        dob = self.cleaned_data.get('date_of_birth')
+        if dob:
+            today = timezone.now().date()
+            age = today.year - dob.year - ((today.month, today.day) < (dob.month, dob.day))
+            if age < 18:
+                raise ValidationError(_("You must be at least 18 years old to register."))
+        return dob

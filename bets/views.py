@@ -334,8 +334,11 @@ def register(request):
         if form.is_valid():
             with transaction.atomic():
                 user = form.save()
-                # Create associated Gambler profile
-                Gambler.objects.create(user=user)
+                # Create associated Gambler profile with date of birth
+                Gambler.objects.create(
+                    user=user,
+                    date_of_birth=form.cleaned_data['date_of_birth']
+                )
                 login(request, user)
                 messages.success(request, _("Registration successful!"))
                 return redirect("home")
