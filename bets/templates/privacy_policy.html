@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Privacy Policy" %}{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="columns is-centered">
+        <div class="column is-8">
+            <div class="box content">
+                <h1 class="title has-text-primary has-text-centered">{% trans "Privacy Policy" %}</h1>
+                
+                <h2>{% trans "Introduction" %}</h2>
+                <p>{% trans "Welcome to Chommies. We are committed to protecting your personal information and your right to privacy." %}</p>
+
+                <h2>{% trans "Information We Collect" %}</h2>
+                <ul>
+                    <li>{% trans "Account information (username, email)" %}</li>
+                    <li>{% trans "Date of birth" %}</li>
+                    <li>{% trans "Betting history and preferences" %}</li>
+                    <li>{% trans "Usage data and statistics" %}</li>
+                </ul>
+
+                <h2>{% trans "How We Use Your Information" %}</h2>
+                <ul>
+                    <li>{% trans "To provide and maintain our service" %}</li>
+                    <li>{% trans "To notify you about changes to our service" %}</li>
+                    <li>{% trans "To allow you to participate in interactive features" %}</li>
+                    <li>{% trans "To provide customer support" %}</li>
+                    <li>{% trans "To ensure the security of our platform" %}</li>
+                </ul>
+
+                <h2>{% trans "Data Security" %}</h2>
+                <p>{% trans "We implement appropriate security measures to protect your personal information. However, no method of transmission over the internet is 100% secure." %}</p>
+
+                <h2>{% trans "Your Rights" %}</h2>
+                <p>{% trans "You have the right to:" %}</p>
+                <ul>
+                    <li>{% trans "Access your personal data" %}</li>
+                    <li>{% trans "Correct your personal data" %}</li>
+                    <li>{% trans "Delete your account" %}</li>
+                    <li>{% trans "Object to processing of your personal data" %}</li>
+                    <li>{% trans "Data portability" %}</li>
+                </ul>
+
+                <h2>{% trans "Cookies" %}</h2>
+                <p>{% trans "We use cookies and similar tracking technologies to track activity on our service and hold certain information." %}</p>
+
+                <h2>{% trans "Changes to This Privacy Policy" %}</h2>
+                <p>{% trans "We may update our Privacy Policy from time to time. We will notify you of any changes by posting the new Privacy Policy on this page." %}</p>
+
+                <h2>{% trans "Contact Us" %}</h2>
+                <p>{% trans "If you have any questions about this Privacy Policy, please contact us:" %}</p>
+                <ul>
+                    <li>{% trans "By email: support@chommies.com" %}</li>
+                </ul>
+
+                <div class="has-text-centered mt-6">
+                    <p class="is-size-7">{% trans "Last updated:" %} {% now "F j, Y" %}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

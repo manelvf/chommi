@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Contact Us" %}{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="columns is-centered">
+        <div class="column is-8-tablet is-6-desktop">
+            <div class="box">
+                <h1 class="title has-text-primary has-text-centered">{% trans "Contact Us" %}</h1>
+                <p class="subtitle has-text-centered mb-5">{% trans "Have questions? We'd love to hear from you." %}</p>
+
+                <form method="post">
+                    {% csrf_token %}
+                    
+                    <div class="field">
+                        <label class="label">{% trans "Name" %}</label>
+                        <div class="control has-icons-left">
+                            <input class="input" type="text" name="name" required>
+                            <span class="icon is-small is-left">
+                                <i class="fas fa-user"></i>
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="field">
+                        <label class="label">{% trans "Email" %}</label>
+                        <div class="control has-icons-left">
+                            <input class="input" type="email" name="email" required>
+                            <span class="icon is-small is-left">
+                                <i class="fas fa-envelope"></i>
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="field">
+                        <label class="label">{% trans "Subject" %}</label>
+                        <div class="control has-icons-left">
+                            <input class="input" type="text" name="subject" required>
+                            <span class="icon is-small is-left">
+                                <i class="fas fa-heading"></i>
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="field">
+                        <label class="label">{% trans "Message" %}</label>
+                        <div class="control">
+                            <textarea class="textarea" name="message" rows="5" required></textarea>
+                        </div>
+                    </div>
+
+                    <div class="field">
+                        <div class="control">
+                            <button class="button is-primary is-fullwidth" type="submit">
+                                <span class="icon">
+                                    <i class="fas fa-paper-plane"></i>
+                                </span>
+                                <span>{% trans "Send Message" %}</span>
+                            </button>
+                        </div>
+                    </div>
+                </form>
+
+                <div class="content has-text-centered mt-6">
+                    <p>
+                        <span class="icon has-text-primary">
+                            <i class="fas fa-envelope"></i>
+                        </span>
+                        <span>support@chommies.com</span>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

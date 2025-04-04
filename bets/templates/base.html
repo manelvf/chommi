@@ -137,15 +137,14 @@
     <footer class="footer">
         <div class="container">
             <div class="content has-text-centered">
-                <p>
-                    <a href="{% url 'about' %}" class="has-text-light">
-                        <span class="icon">
-                            <i class="fas fa-info-circle"></i>
-                        </span>
-                        <span>{% trans "About" %}</span>
-                    </a>
-                </p>
                 <p><strong>Chommies</strong> - {% trans "Your Betting Platform" %}</p>
+                <p class="is-size-7">
+                    <a href="{% url 'about' %}">{% trans "About" %}</a>
+                    <span class="mx-2">|</span>
+                    <a href="{% url 'privacy_policy' %}">{% trans "Privacy Policy" %}</a>
+                    <span class="mx-2">|</span>
+                    <a href="{% url 'contact' %}">{% trans "Contact Us" %}</a>
+                </p>
             </div>
         </div>
     </footer>
