@@ -332,10 +332,13 @@ def register(request):
     if request.method == "POST":
         form = UserRegistrationForm(request.POST)
         if form.is_valid():
-            user = form.save()
-            login(request, user)
-            messages.success(request, _("Registration successful!"))
-            return redirect("home")
+            with transaction.atomic():
+                user = form.save()
+                # Create associated Gambler profile
+                Gambler.objects.create(user=user)
+                login(request, user)
+                messages.success(request, _("Registration successful!"))
+                return redirect("home")
     else:
         form = UserRegistrationForm()
     return render(request, "registration/register.html", {"form": form})
