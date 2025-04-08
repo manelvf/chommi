@@ -87,3 +87,5 @@ db.sqlite3
 staticfiles
 
 events/
+
+.env
