@@ -51,7 +51,7 @@ class EventOption(models.Model):
 
 
 class Bet(models.Model):
-    eventOption = models.ForeignKey(Event, on_delete=models.CASCADE)
+    eventOption = models.ForeignKey(EventOption, on_delete=models.CASCADE)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     price = models.IntegerField()
     amount = models.IntegerField()

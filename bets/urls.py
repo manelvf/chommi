@@ -12,9 +12,9 @@ urlpatterns = [
     path("event/<int:event_id>/", views.event_detail, name="event_detail"),
     path("place_bet/<int:event_id>/", views.place_bet, name="place_bet"),
     path("my_bets/", views.my_bets, name="my_bets"),
-    path("profile/", views.profile, name="profile"),
-    path("register/", views.register, name="register"),
     path("privacy-policy/", views.privacy_policy, name="privacy_policy"),
     path("contact/", views.contact, name="contact"),
     path("accounts/", include("django.contrib.auth.urls")),
+    path("accounts/signup/", views.signup, name="signup"),
+    path("accounts/profile/", views.profile, name="profile"),
 ]
