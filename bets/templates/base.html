@@ -86,12 +86,15 @@
                                 <span>{% trans "My Bets" %}</span>
                             </a>
                             <hr class="navbar-divider">
-                            <a class="navbar-item" href="{% url 'logout' %}">
-                                <span class="icon">
-                                    <i class="fas fa-sign-out-alt"></i>
-                                </span>
-                                <span>{% trans "Logout" %}</span>
-                            </a>
+                            <form method="post" action="{% url 'logout' %}" class="logout-form">
+                                {% csrf_token %}
+                                <button type="submit" class="button is-text">
+                                    <span class="icon">
+                                        <i class="fas fa-sign-out-alt"></i>
+                                    </span>
+                                    <span>{% trans "Logout" %}</span>
+                                </button>
+                            </form>
                         </div>
                     </div>
                 {% else %}
