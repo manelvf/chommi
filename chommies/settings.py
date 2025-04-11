@@ -122,6 +122,7 @@ STATIC_URL = "static/"
 STATICFILES_DIRS = [
     BASE_DIR / "bets" / "static",
     BASE_DIR / "static",
+    ("events", BASE_DIR / "events"),
 ]
 
 STATIC_ROOT = BASE_DIR / "staticfiles"
