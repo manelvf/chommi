@@ -7,14 +7,17 @@ from django.utils.translation import gettext_lazy as _
 
 MONTHS_IN_ADVANCE = 3
 
-def get_default_subscription_date():
-    return datetime.now().date() + relativedelta(months=MONTHS_IN_ADVANCE)
 
 STATUS_CHOICES = (
     ("AC", _("Active")),
     ("DI", _("Disabled")),
     ("EX", _("Expired")),
 )
+
+
+def get_default_subscription_date():
+    return datetime.now().date() + relativedelta(months=MONTHS_IN_ADVANCE)
+
 
 class Gambler(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
