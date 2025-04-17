@@ -1,18 +1,26 @@
-from django.db import models
-from django.contrib.auth.models import User
 from datetime import datetime, timedelta
 from dateutil.relativedelta import relativedelta
+
+from django.db import models
+from django.contrib.auth.models import User
+from django.utils.translation import gettext_lazy as _
 
 MONTHS_IN_ADVANCE = 3
 
 def get_default_subscription_date():
     return datetime.now().date() + relativedelta(months=MONTHS_IN_ADVANCE)
 
+STATUS_CHOICES = (
+    ("AC", _("Active")),
+    ("DI", _("Disabled")),
+    ("EX", _("Expired")),
+)
 
 class Gambler(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     points = models.IntegerField(default=0)
     date_of_birth = models.DateField(null=True, blank=True)
+    status = models.TextField(max_length=3, choices=STATUS_CHOICES, default="AC")
     
     subscription_date = models.DateField(null=True, blank=True, default=get_default_subscription_date)
     created_at = models.DateTimeField(auto_now_add=True)
