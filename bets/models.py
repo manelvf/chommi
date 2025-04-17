@@ -1,12 +1,20 @@
 from django.db import models
 from django.contrib.auth.models import User
+from datetime import datetime, timedelta
+from dateutil.relativedelta import relativedelta
+
+MONTHS_IN_ADVANCE = 3
+
+def get_default_subscription_date():
+    return datetime.now().date() + relativedelta(months=MONTHS_IN_ADVANCE)
 
 
 class Gambler(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     points = models.IntegerField(default=0)
     date_of_birth = models.DateField(null=True, blank=True)
-    subscription_date = models.DateField(null=True, blank=True)
+    
+    subscription_date = models.DateField(null=True, blank=True, default=get_default_subscription_date)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
