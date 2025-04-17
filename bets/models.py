@@ -79,3 +79,30 @@ class Bet(models.Model):
 
     def __str__(self):
         return f"{self.user} - {self.eventOption}: {self.price} x {self.amount}"
+
+
+NotificationKinds = (
+    ("RE", "Registration"),
+    ("SU", "Subscription"),
+    ("DI", "Disabled"),
+    ("DE", "DeletedAccount"),
+    ("BA", "Balance"),
+    ("WI", "Win"),
+    ("LO", "Lose"),
+)
+
+
+class EmailNotifications(models.Model):
+    """
+    Parameters field should be a serialized JSON object, pased a keyword arguments
+    to the notification class.
+    """
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    kind = models.TextField(max_length=3, choices=NotificationKinds) 
+    parameters = models.TextField(max_length=255, null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    is_read = models.BooleanField(default=False)
+    is_sent = models.BooleanField(default=False)
+
+    def __str__(self):
+        return f"{self.user} - {self.kind}"
