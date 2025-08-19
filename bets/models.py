@@ -1,11 +1,16 @@
 from datetime import datetime, timedelta
 from dateutil.relativedelta import relativedelta
+import os
+from io import BytesIO
 
 from django.db import models
 from django.contrib.auth.models import User
 from django.utils.translation import gettext_lazy as _
+from django.core.files import File
+from PIL import Image
 
 MONTHS_IN_ADVANCE = 3
+IMAGE_DIMENSIONS = (300, 300)
 
 
 STATUS_CHOICES = (
@@ -37,7 +42,7 @@ class Event(models.Model):
     title = models.CharField(max_length=200)
     subtitle = models.CharField(max_length=200, blank=True, null=True)
     description = models.TextField()
-    image = models.ImageField(upload_to="events/", null=True, blank=True)
+    image = models.ImageField(upload_to="events/%Y/%m/", null=True, blank=True)
     deadline = models.DateTimeField()
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -54,9 +59,44 @@ class Event(models.Model):
     def __str__(self):
         return self.title
 
+    def save(self, *args, **kwargs):
+        if self.image:
+            self._process_image()
+        super().save(*args, **kwargs)
+
+    def _process_image(self):
+        """Process and resize the uploaded image"""
+        try:
+            # Open and verify the image
+            img = Image.open(self.image)
+            
+            # Convert to RGB if necessary (for PNG with transparency)
+            if img.mode in ('RGBA', 'LA'):
+                background = Image.new('RGB', img.size, (255, 255, 255))
+                background.paste(img, mask=img.split()[-1])
+                img = background
+            
+            # Resize the image
+            img.thumbnail(IMAGE_DIMENSIONS, Image.Resampling.LANCZOS)
+            
+            # Save the resized image
+            output = BytesIO()
+            img.save(output, format='JPEG', quality=85)
+            output.seek(0)
+            
+            # Create a new file with the resized image
+            # Use a new name to avoid overwriting the original
+            original_name = os.path.splitext(self.image.name)[0]
+            new_name = f"resized_{os.path.basename(original_name)}.jpg"
+            self.image.file = File(output, name=new_name)
+            
+        except Exception:
+            # If image processing fails, keep the original image
+            pass
+
 
 class EventOption(models.Model):
-    event = models.ForeignKey(Event, on_delete=models.CASCADE)
+    event = models.ForeignKey(Event, on_delete=models.CASCADE, related_name='options')
     title = models.CharField(max_length=255)
     initial_odds = models.DecimalField(max_digits=5, decimal_places=2)
     current_odds = models.DecimalField(max_digits=5, decimal_places=2)
@@ -71,14 +111,14 @@ class EventOption(models.Model):
 
 
 class Bet(models.Model):
-    eventOption = models.ForeignKey(EventOption, on_delete=models.CASCADE)
+    event = models.ForeignKey(Event, on_delete=models.CASCADE, related_name='bets')
+    option = models.ForeignKey(EventOption, on_delete=models.CASCADE, related_name='bets')
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-    price = models.IntegerField()
-    amount = models.IntegerField()
+    odds = models.DecimalField(max_digits=5, decimal_places=2)
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return f"{self.user} - {self.eventOption}: {self.price} x {self.amount}"
+        return f"{self.user} - {self.option}: {self.odds}"
 
 
 NotificationKinds = (

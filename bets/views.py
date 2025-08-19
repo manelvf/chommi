@@ -15,7 +15,7 @@ from django.http import JsonResponse
 from django.views.decorators.http import require_POST
 from django.contrib.auth.views import LoginView
 from django.urls import reverse_lazy
-from .forms import ImageUploadForm, EventOptionForm, CustomUserCreationForm, LoginForm, CustomEventOptionFormSet, UserRegistrationForm
+from .forms import ImageUploadForm, EventOptionForm, LoginForm, CustomEventOptionFormSet, UserRegistrationForm
 from .models import Event, EventOption, Gambler, Bet
 from django.db.models import Count
 from django.db.models import Q
@@ -159,18 +159,22 @@ class CustomLoginView(LoginView):
 
 def signup(request):
     if request.method == 'POST':
-        form = CustomUserCreationForm(request.POST)
+        form = UserRegistrationForm(request.POST)
         if form.is_valid():
-            user = form.save()
-            # Create associated Gambler profile
-            Gambler.objects.create(user=user)
-            login(request, user)
-            messages.success(request, _('Account created successfully!'))
-            return redirect('home')
+            with transaction.atomic():
+                user = form.save()
+                # Create associated Gambler profile with date of birth
+                Gambler.objects.create(
+                    user=user,
+                    date_of_birth=form.cleaned_data['date_of_birth']
+                )
+                login(request, user)
+                messages.success(request, _('Account created successfully!'))
+                return redirect('home')
         else:
             messages.error(request, _('Please correct the errors below.'))
     else:
-        form = CustomUserCreationForm()
+        form = UserRegistrationForm()
     return render(request, 'signup.html', {'form': form})
 
 
@@ -209,47 +213,28 @@ def event_detail(request, event_id):
 @login_required
 @require_POST
 def place_bet(request, event_id):
+    from .services import place_new_bet, EventClosedError, InvalidOptionError, DuplicateBetError
+    
     event = get_object_or_404(Event, id=event_id)
     option_id = request.POST.get('option')
     
-    # Validate event is still open for betting
-    if event.deadline <= timezone.now():
-        messages.error(request, _("This event has ended. No more bets can be placed."))
-        return redirect('event_detail', event_id=event_id)
-    
-    # Validate option exists and belongs to this event
     try:
-        option = EventOption.objects.get(id=option_id, event=event)
-    except EventOption.DoesNotExist:
-        messages.error(request, _("Invalid betting option selected."))
+        bet = place_new_bet(request.user, event, option_id)
+        messages.success(request, _("Your bet has been placed successfully!"))
         return redirect('event_detail', event_id=event_id)
-    
-    # Check if user has already placed a bet
-    if Bet.objects.filter(event=event, user=request.user).exists():
-        messages.error(request, _("You have already placed a bet on this event."))
+        
+    except EventClosedError as e:
+        messages.error(request, str(e))
         return redirect('event_detail', event_id=event_id)
-    
-    try:
-        with transaction.atomic():
-            # Create the bet
-            bet = Bet.objects.create(
-                event=event,
-                option=option,
-                user=request.user,
-                odds=option.current_odds
-            )
-            
-            # Update the odds for all options
-            total_bets = Bet.objects.filter(event=event).count()
-            for opt in event.options.all():
-                opt_bets = opt.bets.count()
-                if total_bets > 0:
-                    opt.current_odds = total_bets / opt_bets if opt_bets > 0 else 1.0
-                    opt.save()
-            
-            messages.success(request, _("Your bet has been placed successfully!"))
-            return redirect('event_detail', event_id=event_id)
-            
+        
+    except InvalidOptionError as e:
+        messages.error(request, str(e))
+        return redirect('event_detail', event_id=event_id)
+        
+    except DuplicateBetError as e:
+        messages.error(request, str(e))
+        return redirect('event_detail', event_id=event_id)
+        
     except Exception as e:
         messages.error(request, _("An error occurred while placing your bet. Please try again."))
         if settings.DEBUG:

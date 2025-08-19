@@ -23,22 +23,7 @@
                     <form method="post">
                         {% csrf_token %}
                         {% for field in form %}
-                            <div class="field">
-                                <label class="label has-text-primary">{{ field.label_tag }}</label>
-                                <div class="control">
-                                    {{ field }}
-                                </div>
-                                {% if field.help_text %}
-                                    <p class="help">{{ field.help_text }}</p>
-                                {% endif %}
-                                {% if field.errors %}
-                                    <p class="help is-danger">
-                                        {% for error in field.errors %}
-                                            {{ error }}
-                                        {% endfor %}
-                                    </p>
-                                {% endif %}
-                            </div>
+                            {% include '_form_field.html' with field=field %}
                         {% endfor %}
                         
                         <div class="field">

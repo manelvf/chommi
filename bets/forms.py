@@ -9,8 +9,6 @@ from datetime import datetime, timedelta
 from django.core.exceptions import ValidationError
 from django.forms import inlineformset_factory
 from PIL import Image, UnidentifiedImageError
-from io import BytesIO
-from django.core.files import File
 from django.utils.translation import gettext_lazy as _
 from django.conf import settings
 from django.utils import timezone
@@ -19,7 +17,6 @@ from django.contrib.auth.models import User
 
 
 IMAGE_SIZE_LIMIT = 4 * 1024 * 1024
-IMAGE_DIMENSIONS = (300, 300)
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
 ALLOWED_MIME_TYPES = {'image/jpeg', 'image/png', 'image/gif'}
 
@@ -170,28 +167,6 @@ class ImageUploadForm(forms.ModelForm):
             img.verify()  # Verify it's a valid image
             image.seek(0)  # Reset file pointer after verify
             
-            # Reopen the image for processing
-            img = Image.open(image)
-            
-            # Convert to RGB if necessary (for PNG with transparency)
-            if img.mode in ('RGBA', 'LA'):
-                background = Image.new('RGB', img.size, (255, 255, 255))
-                background.paste(img, mask=img.split()[-1])
-                img = background
-            
-            # Resize the image
-            img.thumbnail(IMAGE_DIMENSIONS, Image.Resampling.LANCZOS)
-            
-            # Save the resized image
-            output = BytesIO()
-            img.save(output, format='JPEG', quality=85)
-            output.seek(0)
-            
-            # Create a new file with the resized image
-            # Use a new name to avoid overwriting the original
-            new_name = f"resized_{os.path.splitext(image.name)[0]}.jpg"
-            image.file = File(output, name=new_name)
-            
         except UnidentifiedImageError:
             raise ValidationError(_('El archivo no es una imagen válida.'))
         except Exception as e:
@@ -219,26 +194,6 @@ class LoginForm(forms.Form):
     )
 
 
-class CustomUserCreationForm(UserCreationForm):
-    email = forms.EmailField(
-        widget=forms.EmailInput(attrs={'class': 'input', 'placeholder': _('Email')}),
-        label=_('Email')
-    )
-
-    class Meta:
-        model = User
-        fields = ('username', 'email', 'password1', 'password2')
-        widgets = {
-            'username': forms.TextInput(attrs={'class': 'input', 'placeholder': _('Username')}),
-            'password1': forms.PasswordInput(attrs={'class': 'input', 'placeholder': _('Password')}),
-            'password2': forms.PasswordInput(attrs={'class': 'input', 'placeholder': _('Confirm Password')}),
-        }
-
-    def clean_email(self):
-        email = self.cleaned_data.get('email')
-        if User.objects.filter(email=email).exists():
-            raise ValidationError(_('This email is already registered.'))
-        return email
 
 
 class EventForm(forms.ModelForm):
