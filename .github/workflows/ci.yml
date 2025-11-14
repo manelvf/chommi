@@ -1,0 +1,157 @@
+name: CI
+
+on:
+  push:
+    branches: [ main, master, develop, 'claude/**' ]
+  pull_request:
+    branches: [ main, master, develop ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        python-version: ['3.11', '3.12']
+
+    services:
+      redis:
+        image: redis:7
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v5
+      with:
+        python-version: ${{ matrix.python-version }}
+
+    - name: Install uv
+      run: |
+        curl -LsSf https://astral.sh/uv/install.sh | sh
+        echo "$HOME/.cargo/bin" >> $GITHUB_PATH
+
+    - name: Install dependencies
+      run: |
+        uv venv
+        source .venv/bin/activate
+        uv pip install django pillow celery redis ipython python-dateutil
+
+    - name: Create logs directory
+      run: mkdir -p logs
+
+    - name: Create events directory
+      run: mkdir -p events
+
+    - name: Run migrations
+      run: |
+        source .venv/bin/activate
+        python manage.py migrate --noinput
+      env:
+        SECRET_KEY: 'test-secret-key-for-ci-only-do-not-use-in-production'
+        DEBUG: 'False'
+        ALLOWED_HOSTS: 'localhost,127.0.0.1'
+
+    - name: Run tests
+      run: |
+        source .venv/bin/activate
+        python manage.py test
+      env:
+        SECRET_KEY: 'test-secret-key-for-ci-only-do-not-use-in-production'
+        DEBUG: 'False'
+        ALLOWED_HOSTS: 'localhost,127.0.0.1'
+
+    - name: Check for missing migrations
+      run: |
+        source .venv/bin/activate
+        python manage.py makemigrations --check --dry-run
+      env:
+        SECRET_KEY: 'test-secret-key-for-ci-only-do-not-use-in-production'
+        DEBUG: 'False'
+        ALLOWED_HOSTS: 'localhost,127.0.0.1'
+
+  lint:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+
+    - name: Install uv
+      run: |
+        curl -LsSf https://astral.sh/uv/install.sh | sh
+        echo "$HOME/.cargo/bin" >> $GITHUB_PATH
+
+    - name: Install dependencies and linting tools
+      run: |
+        uv venv
+        source .venv/bin/activate
+        uv pip install django pillow celery redis ipython python-dateutil
+        uv pip install flake8 black isort
+
+    - name: Check code formatting with black
+      run: |
+        source .venv/bin/activate
+        black --check .
+      continue-on-error: true
+
+    - name: Check import sorting with isort
+      run: |
+        source .venv/bin/activate
+        isort --check-only .
+      continue-on-error: true
+
+    - name: Lint with flake8
+      run: |
+        source .venv/bin/activate
+        # Stop the build if there are Python syntax errors or undefined names
+        flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+        # Exit-zero treats all errors as warnings
+        flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+      continue-on-error: true
+
+  security:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+
+    - name: Install uv
+      run: |
+        curl -LsSf https://astral.sh/uv/install.sh | sh
+        echo "$HOME/.cargo/bin" >> $GITHUB_PATH
+
+    - name: Install dependencies and security tools
+      run: |
+        uv venv
+        source .venv/bin/activate
+        uv pip install django pillow celery redis ipython python-dateutil
+        uv pip install bandit safety
+
+    - name: Run security checks with bandit
+      run: |
+        source .venv/bin/activate
+        bandit -r bets/ chommies/ -ll
+      continue-on-error: true
+
+    - name: Check for known security vulnerabilities
+      run: |
+        source .venv/bin/activate
+        safety check
+      continue-on-error: true

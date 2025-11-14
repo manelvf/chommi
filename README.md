@@ -1,5 +1,7 @@
 # Chommies
 
+[![CI](https://github.com/manelvf/chommi/actions/workflows/ci.yml/badge.svg)](https://github.com/manelvf/chommi/actions/workflows/ci.yml)
+
 A Django-based betting platform for friendly wagers among friends.
 
 ## Features
