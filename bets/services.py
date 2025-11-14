@@ -1,10 +1,13 @@
 """Betting service layer for business logic."""
 
+import logging
 from django.db import transaction
 from django.core.exceptions import ValidationError
 from django.utils import timezone
 from django.utils.translation import gettext as _
 from .models import Event, EventOption, Bet
+
+logger = logging.getLogger('bets')
 
 
 class BettingError(Exception):
@@ -68,27 +71,47 @@ def place_new_bet(user, event, option_id):
                 user=user,
                 odds=option.current_odds
             )
-            
+
             # Update the odds for all options
             _update_event_odds(event)
-            
+
             return bet
-            
+
+    except ValidationError:
+        # Re-raise validation errors as-is
+        raise
     except Exception as e:
+        # Log unexpected errors with full context
+        logger.error(f"Unexpected error placing bet for user {user.id} on event {event.id}: {str(e)}", exc_info=True)
         raise ValidationError(_("An error occurred while placing your bet. Please try again."))
 
 
 def _update_event_odds(event):
     """
     Update odds for all options in an event based on current bet distribution.
-    
+
+    The odds are calculated inversely proportional to the number of bets.
+    More bets = lower odds (lower payout), fewer bets = higher odds (higher payout).
+
     Args:
         event: The Event instance to update odds for
     """
     total_bets = Bet.objects.filter(event=event).count()
-    
+
+    if total_bets == 0:
+        # No bets yet, keep initial odds
+        return
+
     for option in event.options.all():
         option_bets = option.bets.count()
-        if total_bets > 0:
-            option.current_odds = total_bets / option_bets if option_bets > 0 else 1.0
-            option.save()
+
+        if option_bets > 0:
+            # Calculate odds based on bet distribution
+            # Odds increase when fewer people bet on this option
+            option.current_odds = total_bets / option_bets
+        else:
+            # No bets on this option yet - use maximum odds based on total bets
+            # or keep initial odds, whichever is higher
+            option.current_odds = max(float(option.initial_odds), total_bets * 2.0)
+
+        option.save()

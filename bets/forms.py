@@ -150,7 +150,7 @@ class ImageUploadForm(forms.ModelForm):
 
         # Check file size
         if image.size > IMAGE_SIZE_LIMIT:
-            raise ValidationError(_('La imagen no puede ser mayor a 2MB.'))
+            raise ValidationError(_('La imagen no puede ser mayor a 4MB.'))
 
         # Check file extension
         extension = image.name.split('.')[-1].lower()
@@ -206,7 +206,11 @@ class EventForm(forms.ModelForm):
             "description": forms.Textarea(attrs={"class": "textarea"}),
             "deadline": forms.DateTimeInput(attrs={"class": "input", "type": "datetime-local"}),
         }
-        required_fields = ["title", "description", "deadline"]  # subtitle is not required
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Make subtitle optional
+        self.fields['subtitle'].required = False
 
 
 class UserRegistrationForm(UserCreationForm):

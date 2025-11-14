@@ -2,12 +2,16 @@ from datetime import datetime, timedelta
 from dateutil.relativedelta import relativedelta
 import os
 from io import BytesIO
+import logging
 
 from django.db import models
 from django.contrib.auth.models import User
 from django.utils.translation import gettext_lazy as _
 from django.core.files import File
+from django.utils import timezone
 from PIL import Image
+
+logger = logging.getLogger('bets')
 
 MONTHS_IN_ADVANCE = 3
 IMAGE_DIMENSIONS = (300, 300)
@@ -21,18 +25,23 @@ STATUS_CHOICES = (
 
 
 def get_default_subscription_date():
-    return datetime.now().date() + relativedelta(months=MONTHS_IN_ADVANCE)
+    return timezone.now().date() + relativedelta(months=MONTHS_IN_ADVANCE)
 
 
 class Gambler(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     points = models.IntegerField(default=0)
     date_of_birth = models.DateField(null=True, blank=True)
-    status = models.TextField(max_length=3, choices=STATUS_CHOICES, default="AC")
-    
+    status = models.TextField(max_length=3, choices=STATUS_CHOICES, default="AC", db_index=True)
+
     subscription_date = models.DateField(null=True, blank=True, default=get_default_subscription_date)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        indexes = [
+            models.Index(fields=['status', 'subscription_date']),
+        ]
 
     def __str__(self):
         return self.user.username
@@ -43,10 +52,10 @@ class Event(models.Model):
     subtitle = models.CharField(max_length=200, blank=True, null=True)
     description = models.TextField()
     image = models.ImageField(upload_to="events/%Y/%m/", null=True, blank=True)
-    deadline = models.DateTimeField()
-    created_at = models.DateTimeField(auto_now_add=True)
+    deadline = models.DateTimeField(db_index=True)
+    created_at = models.DateTimeField(auto_now_add=True, db_index=True)
     updated_at = models.DateTimeField(auto_now=True)
-    is_public = models.BooleanField(default=True)
+    is_public = models.BooleanField(default=True, db_index=True)
     creator = models.ForeignKey(User, on_delete=models.CASCADE, related_name="created_events")
     winner = models.ForeignKey(
         "EventOption",
@@ -55,6 +64,13 @@ class Event(models.Model):
         blank=True,
         related_name="won_events",
     )
+
+    class Meta:
+        indexes = [
+            models.Index(fields=['is_public', '-created_at']),
+            models.Index(fields=['deadline', 'is_public']),
+            models.Index(fields=['creator', '-created_at']),
+        ]
 
     def __str__(self):
         return self.title
@@ -69,30 +85,31 @@ class Event(models.Model):
         try:
             # Open and verify the image
             img = Image.open(self.image)
-            
+
             # Convert to RGB if necessary (for PNG with transparency)
             if img.mode in ('RGBA', 'LA'):
                 background = Image.new('RGB', img.size, (255, 255, 255))
                 background.paste(img, mask=img.split()[-1])
                 img = background
-            
+
             # Resize the image
             img.thumbnail(IMAGE_DIMENSIONS, Image.Resampling.LANCZOS)
-            
+
             # Save the resized image
             output = BytesIO()
             img.save(output, format='JPEG', quality=85)
             output.seek(0)
-            
+
             # Create a new file with the resized image
             # Use a new name to avoid overwriting the original
             original_name = os.path.splitext(self.image.name)[0]
             new_name = f"resized_{os.path.basename(original_name)}.jpg"
             self.image.file = File(output, name=new_name)
-            
-        except Exception:
-            # If image processing fails, keep the original image
-            pass
+
+        except Exception as e:
+            # If image processing fails, log the error and keep the original image
+            logger.warning(f"Failed to process image for event '{self.title}': {str(e)}")
+            # Keep the original image by doing nothing
 
 
 class EventOption(models.Model):
@@ -115,7 +132,14 @@ class Bet(models.Model):
     option = models.ForeignKey(EventOption, on_delete=models.CASCADE, related_name='bets')
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     odds = models.DecimalField(max_digits=5, decimal_places=2)
-    created_at = models.DateTimeField(auto_now_add=True)
+    created_at = models.DateTimeField(auto_now_add=True, db_index=True)
+
+    class Meta:
+        indexes = [
+            models.Index(fields=['user', '-created_at']),
+            models.Index(fields=['event', '-created_at']),
+            models.Index(fields=['event', 'user']),  # For checking duplicate bets
+        ]
 
     def __str__(self):
         return f"{self.user} - {self.option}: {self.odds}"
@@ -134,7 +158,7 @@ NotificationKinds = (
 
 class EmailNotifications(models.Model):
     """
-    Parameters field should be a serialized JSON object, pased a keyword arguments
+    Parameters field should be a serialized JSON object, passed as keyword arguments
     to the notification class.
     """
     user = models.ForeignKey(User, on_delete=models.CASCADE)

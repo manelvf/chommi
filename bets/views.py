@@ -1,26 +1,26 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import logout, login, authenticate
 from django.contrib import messages
-from django.conf.urls.static import static
 from django.conf import settings
-from django.forms.models import inlineformset_factory
+from django.forms import inlineformset_factory
 from django.contrib.auth.decorators import login_required
 from django.utils.translation import gettext as _
-from django.forms import inlineformset_factory
 from django.contrib.auth.models import User
 from django.db import transaction
 from django.core.exceptions import ValidationError
 from django.utils import timezone
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponseForbidden
 from django.views.decorators.http import require_POST
 from django.contrib.auth.views import LoginView
 from django.urls import reverse_lazy
 from .forms import ImageUploadForm, EventOptionForm, LoginForm, CustomEventOptionFormSet, UserRegistrationForm
 from .models import Event, EventOption, Gambler, Bet
-from django.db.models import Count
-from django.db.models import Q
+from django.db.models import Count, Q
 from django.core.paginator import Paginator
 from datetime import timedelta
+import logging
+
+logger = logging.getLogger('bets')
 
 
 def home(request):
@@ -84,7 +84,16 @@ def create_event(request):
 
 def edit_event(request, event_id):
     event = get_object_or_404(Event, id=event_id)
-    
+
+    # Authorization check: only the creator can edit the event
+    if not request.user.is_authenticated:
+        messages.error(request, _("You must be logged in to edit an event."))
+        return redirect('login')
+
+    if event.creator != request.user:
+        messages.error(request, _("You don't have permission to edit this event."))
+        return HttpResponseForbidden(_("You don't have permission to edit this event."))
+
     if request.method == "POST":
         form = ImageUploadForm(request.POST, request.FILES, instance=event, label_suffix="")
         formset = EventOptionFormSet(request.POST, instance=event)
@@ -125,18 +134,18 @@ def all_services(request):
 @login_required
 def profile(request):
     user = request.user
-    created_events = Event.objects.filter(creator=user).order_by('-created_at')
-    user_bets = Bet.objects.filter(user=user).order_by('-created_at')
-    
+    created_events = Event.objects.filter(creator=user).select_related('creator').order_by('-created_at')
+    user_bets = Bet.objects.filter(user=user).select_related('event', 'option').order_by('-created_at')
+
     context = {
         'user': user,
         'created_events': created_events,
         'user_bets': user_bets,
         'total_events': created_events.count(),
         'total_bets': user_bets.count(),
-        'winning_bets': user_bets.filter(eventOption__is_winner=True).count(),
+        'winning_bets': user_bets.filter(option__is_winner=True).count(),
     }
-    
+
     return render(request, 'profile.html', context)
 
 
@@ -271,15 +280,17 @@ def my_bets(request):
 
 def latest_events(request):
     """View for displaying the latest events"""
-    events = Event.objects.filter(
-        Q(is_public=True) | Q(user=request.user)
-    ).order_by('-created_at')
-    
+    query = Q(is_public=True)
+    if request.user.is_authenticated:
+        query |= Q(creator=request.user)
+
+    events = Event.objects.filter(query).select_related('creator').order_by('-created_at')
+
     # Paginate events
     paginator = Paginator(events, 12)  # Show 12 events per page
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
-    
+
     context = {
         'events': page_obj,
         'title': _('Latest Events'),
@@ -293,18 +304,22 @@ def popular_events(request):
     """View for displaying the most popular events"""
     # Get events with the most bets in the last 7 days
     recent_date = timezone.now() - timedelta(days=7)
+    query = Q(is_public=True)
+    if request.user.is_authenticated:
+        query |= Q(creator=request.user)
+
     events = Event.objects.filter(
-        Q(is_public=True) | Q(user=request.user),
+        query,
         bets__created_at__gte=recent_date
-    ).annotate(
+    ).select_related('creator').annotate(
         bet_count=Count('bets')
     ).order_by('-bet_count')
-    
+
     # Paginate events
     paginator = Paginator(events, 12)  # Show 12 events per page
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
-    
+
     context = {
         'events': page_obj,
         'title': _('Popular Events'),
@@ -338,14 +353,48 @@ def privacy_policy(request):
 
 def contact(request):
     if request.method == 'POST':
-        name = request.POST.get('name')
-        email = request.POST.get('email')
-        subject = request.POST.get('subject')
-        message = request.POST.get('message')
-        
+        name = request.POST.get('name', '').strip()
+        email = request.POST.get('email', '').strip()
+        subject = request.POST.get('subject', '').strip()
+        message = request.POST.get('message', '').strip()
+
+        # Validate inputs
+        errors = []
+        if not name or len(name) < 2:
+            errors.append(_('Name must be at least 2 characters long.'))
+        if not email or '@' not in email:
+            errors.append(_('Please provide a valid email address.'))
+        if not subject or len(subject) < 3:
+            errors.append(_('Subject must be at least 3 characters long.'))
+        if not message or len(message) < 10:
+            errors.append(_('Message must be at least 10 characters long.'))
+
+        # Check for maximum lengths to prevent abuse
+        if len(name) > 100:
+            errors.append(_('Name is too long (max 100 characters).'))
+        if len(email) > 254:  # RFC 5321
+            errors.append(_('Email is too long.'))
+        if len(subject) > 200:
+            errors.append(_('Subject is too long (max 200 characters).'))
+        if len(message) > 5000:
+            errors.append(_('Message is too long (max 5000 characters).'))
+
+        if errors:
+            for error in errors:
+                messages.error(request, error)
+            return render(request, 'contact.html', {
+                'name': name,
+                'email': email,
+                'subject': subject,
+                'message': message,
+            })
+
+        # Log the contact form submission
+        logger.info(f'Contact form submission from {name} ({email}): {subject}')
+
         # Here you would typically send an email or save to database
         # For now, we'll just show a success message
         messages.success(request, _('Thank you for your message! We will get back to you soon.'))
         return redirect('contact')
-        
+
     return render(request, 'contact.html')
